@@ -39,4 +39,4 @@ const FlexItem = {
 }
 
 
-export default createAsyncComponentWithTemplateUrl('/flexbox/components/flex-item/index.html', FlexItem)
+export default createAsyncComponentWithTemplateUrl('./index.html', FlexItem)
