@@ -40,4 +40,4 @@ const FormItem = {
 }
 
 
-export default createAsyncComponentWithTemplateUrl('./index.html', FormItem)
+export default createAsyncComponentWithTemplateUrl('index.html', FormItem)
