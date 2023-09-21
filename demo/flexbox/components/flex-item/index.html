@@ -1,0 +1,34 @@
+<template>
+  <div class="flex-item"
+    :style="style">
+    <div class="flex-item-no">{{ index }}</div>
+    <el-form :model="formModel"
+      label-width="90px">
+      <el-form-item label="width">
+        <el-input v-model="otherStyle.width" />
+      </el-form-item>
+      <el-form-item label="height">
+        <el-input v-model="otherStyle.height" />
+      </el-form-item>
+      <form-item v-for="formItem in formItems"
+        :key="formItem.key"
+        :label="formItem.key"
+        :desc="formItem.desc"
+        :prop="formItem.key"
+        :form-Type="formItem.com"
+        :enums="formItem.enums||[]"
+        v-model="formModel[formItem.key]" />
+    </el-form>
+  </div>
+</template>
+
+<style>
+  .flex-item {
+    margin: 2px;
+    padding: 5px;
+    border: #aaa solid 1px;
+    border-radius: 5px;
+    background-color: skyblue;
+    height: auto;
+  }
+</style>

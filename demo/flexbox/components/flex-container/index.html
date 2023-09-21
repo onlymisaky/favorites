@@ -1,0 +1,65 @@
+<template>
+  <div class="container">
+    <div class="container-config">
+      <el-divider content-position="left">项目</el-divider>
+      <el-form label-width="110px">
+        <el-form-item label="数量">
+          <el-input-number v-model="itemsInfo.count"
+            :min="1"
+            :step="1"
+            step-strictly />
+        </el-form-item>
+        <el-form-item label="width">
+          <el-input v-model="itemsInfo.width" />
+        </el-form-item>
+        <el-form-item label="height">
+          <el-input v-model="itemsInfo.height" />
+        </el-form-item>
+      </el-form>
+      <el-divider content-position="left">容器</el-divider>
+      <el-form label-width="110px">
+        <el-form-item label="width">
+          <el-input v-model="otherStyle.width" />
+        </el-form-item>
+        <el-form-item label="height">
+          <el-input v-model="otherStyle.height" />
+        </el-form-item>
+        <form-item v-for="formItem in formItems"
+          :key="formItem.key"
+          :label="formItem.key"
+          :desc="formItem.desc"
+          :prop="formItem.key"
+          :form-Type="formItem.com"
+          :enums="formItem.enums||[]"
+          v-model="formModel[formItem.key]" />
+
+      </el-form>
+    </div>
+
+    <div class="flex-container"
+      :style="style">
+      <flex-item v-for="index in itemsInfo.count"
+        :key="index"
+        :index="index"
+        :width="itemsInfo.width"
+        :height="itemsInfo.height">
+      </flex-item>
+    </div>
+  </div>
+
+</template>
+
+<style>
+  .container {
+    display: flex;
+  }
+
+  .container-config {
+    padding: 10px;
+  }
+
+  .flex-container {
+    display: flex;
+    background-color: hotpink;
+  }
+</style>

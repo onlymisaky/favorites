@@ -1,0 +1,27 @@
+<template>
+  <el-form-item :prop="prop">
+    <template #label>
+      <el-tooltip :content="desc"
+        raw-content
+        :hide-after="0">
+        <span class="cursor-pointer">{{label}}</span>
+      </el-tooltip>
+    </template>
+    <component :is="formType"
+      v-model="value"
+      controls-position="right"
+      :fetch-suggestions="queryEnums">
+      <el-option v-for="item in enums"
+        :key="item"
+        :label="item"
+        :value="item">
+      </el-option>
+    </component>
+  </el-form-item>
+</template>
+
+<style>
+  .cursor-pointer {
+    cursor: pointer;
+  }
+</style>
