@@ -40,4 +40,17 @@ const FlexContainer = {
   },
 }
 
-export default createAsyncComponentWithTemplateUrl('index.html', FlexContainer)
+const resolveUrl = (url = '') => {
+  if (!url.startsWith('/')
+    && !url.startsWith('./')
+    && !url.startsWith('../')
+  ) {
+    return url
+  }
+  if (typeof import.meta.resolve === 'function') {
+    return import.meta.resolve(url)
+  }
+  return new URL(url, import.meta.url).pathname
+}
+
+export default createAsyncComponentWithTemplateUrl(resolveUrl('./index.html'), FlexContainer)
