@@ -1,6 +1,6 @@
 import { containerAttrsMap } from '@/utils/constants.js'
 import { createAsyncComponentWithTemplateUrl } from '@/utils/index.js'
-import { useForm } from '/flexbox/hooks/useForm.js'
+import { useForm } from '@/hooks/useForm.js'
 import FormItem from '@/components/form-item/index.js'
 import FlexItem from '@/components/flex-item/index.js'
 

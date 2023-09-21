@@ -1,9 +1,9 @@
 import { itemAttrsMap } from '@/utils/constants.js'
 import { createAsyncComponentWithTemplateUrl } from '@/utils/index.js'
-import { useForm } from '/flexbox/hooks/useForm.js'
+import { useForm } from '@/hooks/useForm.js'
 import FormItem from '@/components/form-item/index.js'
 
-const { watch, ref, computed } = Vue;
+const { watch, ref, computed } = Vue
 
 const FlexItem = {
   name: 'FlexItem',
