@@ -19,7 +19,6 @@
     .appbar {
       display: flex;
       align-items: center;
-      white-space: nowrap;
       width: 360px;
       border: 1px solid #ccc;
       border-left: 0 none;
@@ -33,6 +32,11 @@
     }
 
     .title {
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .title>div {
       text-overflow: ellipsis;
       overflow: hidden;
     }
@@ -41,20 +45,50 @@
       justify-content: end;
     }
 
+    .tool>a {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+    }
+
     .appbar+.appbar { margin-top: 8px; }
+
+    @keyframes scroll {
+      from {
+        transform: translate(0, 0);
+      }
+
+      to {
+        transform: translate(-100%, 0);
+      }
+    }
+
+    .auto-scroll {
+      animation: scroll 3s linear infinite;
+    }
   </style>
 </head>
 
 <body>
   <div class="appbar">
     <div class="tool"><a>&lt;</a></div>
-    <h1 class="title">i am title</h1>
+    <h1 class="title">
+      <div>我是标题</div>
+    </h1>
+    <div class="tool right"><a>...</a></div>
+  </div>
+
+
+  <div class="appbar">
+    <div class="tool"><a>&lt;</a></div>
+    <h1 class="title"><div>我是标题12345678987654321</div></h1>
     <div class="tool right"><a>...</a></div>
   </div>
 
   <div class="appbar">
     <div class="tool"><a>&lt;</a></div>
-    <h1 class="title">我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题</h1>
+    <h1 class="title"><div>我是标题12345678987654321</div></h1>
     <div class="tool right">
       <a>⭕</a>
       <a>...</a>
@@ -64,3 +98,14 @@
 </body>
 
 </html>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const title = document.querySelectorAll('.appbar .title>div').item(2);
+    const { clientWidth, scrollWidth } = title;
+    if (scrollWidth > clientWidth) {
+      title.style.overflow = 'initial'
+      title.classList.add('auto-scroll')
+    }
+  })
+</script>
