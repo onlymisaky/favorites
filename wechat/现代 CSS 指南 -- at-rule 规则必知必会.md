@@ -1,0 +1,857 @@
+> 本文由 [简悦 SimpRead](http://ksria.com/simpread/) 转码， 原文地址 [mp.weixin.qq.com](https://mp.weixin.qq.com/s/LkM_Y-9OfgXatocVsM6m6g)
+
+大部分同学都用过 CSS 的屏幕宽度媒体查询，像是这样：
+
+```
+@media screen and (min-width: 900px) {  div {    padding: 1rem 3rem;  }}
+```
+
+这里表示的是与屏幕宽度相关的样式设置，上面的代码表示当屏幕宽度大于 900px 时，内部的样式代码块才能生效。
+
+其实不仅仅是上面的屏幕宽度媒体查询，在 CSS 中，存在大量的以 `@` 符号开头的规则。称之为 `@规则`(**at-rule**)。本文就将介绍一下除去媒体查询之外，其他有意思的且在未来会越来越重要的 `@规则` 规则。
+
+at-rule @规则
+-----------
+
+OK，什么是 @规则（at-rule ）呢？
+
+一个 **at-rule** 是一个 CSS 语句 [1]，以 at 符号开头， '`@`' (`U+0040 COMMERCIAL AT`), 后跟一个标识符，并包括直到下一个分号的所有内容， '`;`' (`U+003B SEMICOLON`), 或下一个 CSS 块，以先到者为准。
+
+除去我们最为熟悉的 `@media` 之外，CSS 还有哪些 @规则 呢？
+
+下面是一些 @规则，由它们的标示符指定，每种规则都有不同的语法：
+
+*   `@charset`[2], 定义样式表使用的字符集。
+    
+*   `@import`[3], 告诉 CSS 引擎引入一个外部样式表。
+    
+*   `@namespace`[4], 告诉 CSS 引擎必须考虑 XML 命名空间。
+    
+
+下面是一些嵌套 @ 规则，是嵌套语句的子集，不仅可以作为样式表里的一个语句，也可以用在条件规则组里：
+
+*   `@media`[5]，如果满足媒介查询的条件则条件规则组里的规则生效。
+    
+*   `@page`[6]，描述打印文档时布局的变化。
+    
+*   `@font-face`[7]，描述将下载的外部的字体。
+    
+*   `@keyframes`[8]，描述 CSS 动画的中间步骤。
+    
+*   `@supports`[9], 如果满足给定条件则条件规则组里的规则生效。
+    
+*   `@document`[10]，如果文档样式表满足给定条件则条件规则组里的规则生效。 _(推延至 CSS Level 4 规范)_
+    
+*   `@viewport`[11] （**已废弃**），规则让我们可以对文档的大小进行设置。这个特性主要被用于移动设备，但是也可以用在支持类似 “固定到边缘” 等特性的桌面浏览器，如微软的 Edge。
+    
+*   `@counter-style`[12] — 一个 `@counter-style` 规则定义了如何把一个计数器的值转化为字符串表示。
+    
+*   `@font-feature-values`[13] (plus `@swash`, `@ornaments`, `@annotation`, `@stylistic`, `@styleset` and `@character-variant`)， 允许作者在 font-variant-alternates[14] 中使用通用名称，用于在 OpenType 中以不同方式激活功能。它允许在使用几种字体时简化 CSS。
+    
+*   `@property`[15] （**实验性**），是 CSS Houdini[16] API 的一部分，它允许开发者显式地定义他们的 css 自定义属性 [17], 允许进行属性类型检查、设定默认值以及定义该自定义属性是否可以被继承。
+    
+*   `@layer`[18]， 声明了一个 级联层，同一层内的规则将级联在一起，这给予了开发者对层叠机制的更多控制。
+    
+
+除去我们非常熟悉的 `@media`、`keyframes` 以及 `@font-face`，像是 `@supports`、`@counter-style`、`@property`、`@layer` 等都已经或将在未来 Web 应用中扮演举足轻重的作用。
+
+下面，就跟随本文，一起对它们一探究竟。你也可以跳过你已经掌握的，翻到对应你还不太了解的 @ 规则下，迅速了解它们。
+
+@charset、@import、@namespace
+---------------------------
+
+这三个可以放在一起讲解，他们的语法比较简单，也相对好理解。其中：
+
+1.  `@charset`：指定样式表中使用的字符编码。它必须是样式表中的第一个元素，而前面不得有任何字符。
+    
+
+像是这样：
+
+```
+// style.css@charset "UTF-8";
+```
+
+注意，如果有多个 @charset @规则被声明，只有第一个会被使用。
+
+很多人会有疑惑，这个声明到底有什么用呢？
+
+事实上，如果 CSS 文件中有任何非 ASCII 文本，例如字体名称，伪元素的 content 属性值、选择器等中的非 ASCII 字符，都需要确保 CSS 解析器知道如何转换字节正确转换为字符，以便它理解 CSS 代码。
+
+所以如果当你发现你的伪元素 content 中插入了一些内容，但是经过打包编译后它乱码了，很有可能是因为你忘了声明这个字符集。
+
+2.  `@import`：用于从其他样式表导入样式规则。这些规则必须先于所有其他类型的规则，`@charset` 规则除外
+    
+
+@import 有两种语法：
+
+1.  url() 内包含 style sheet 的 URI
+    
+2.  直接写 style sheet 的 URI 的字符串
+    
+
+还可以直接在后面定义媒体查询规则，像是这样：
+
+```
+@import 'custom.css';@import url('landscape.css');@import url('landscape.css') screen and (orientation:landscape);
+```
+
+合理的使用 `@import` 其实也是有好处的：
+
+1.  可以合理的控制 CSS 文件的大小
+    
+2.  更好的分治与复用
+    
+
+很多人可能会经常看到，网络上会有各种**抵制 @import** 的文章，不过既然设计了 @import，总有它的有用之处，不能过于绝对。使用 `@import` 影响页面性能的地方主要体现在两个方面：
+
+1.  影响浏览器的并行下载
+    
+2.  优先级问题，样式互相覆盖
+    
+3.  导致页面闪烁
+    
+
+这里可以简单解释一下。首先我们得知道，加载页面时，link 标签引入的 CSS 被同时加载，而 @import 引入的 CSS 将在页面加载完毕后被加载。
+
+CSS 解析引擎在对一个 CSS 文件进行解析时，如在文件顶部遇到 `@import` 规则，将被替换为该 @import 导入的 CSS 文件中的全部样式。而 `@import` 内的规则其后被加载，却会在加载完毕后置于样式表顶部，最终渲染时，如果存在同名同优先级样式，会被下面的同名样式层叠，导致所谓的优先级冲突。
+
+实际上，浏览器渲染的动作一般会执行多次的。最后一次渲染，一定是基于之前加载过的所有样式整合后渲染树进行绘制页面的， 而由于 `@import` 内的规则的加载时机问题，会在页面内容加载完后再加载。相当于把 CSS 放在了 body 底部，从而造成了页面的闪烁。当网络较差时，闪烁体验更为明显。
+
+3.  `@namespace` ：`@namespace` 是用来定义使用在 CSS 样式表中的 XML 命名空间的 @规则。定义的命名空间可以把通配、元素和属性选择器限制在指定命名空间里的元素。
+    
+
+并且，任何 @namespace 规则都必须在所有的 `@charset` 和 `@import`规则之后，并且在样式表中，位于其他任何样式声明之前。
+
+总的来说，`@namespace` 在现如今的 CSS 生态中，属于非常冷门的一个规则。基本上我从业这么久，没怎么见过这个属性的具体使用。
+
+如果你对它确实感兴趣，可以看看这篇详解 -- spacing-out-on-css-namespaces.[19]
+
+`@media`、`@keyframes`、`@font-face`
+----------------------------------
+
+这三个 @ 规则，大家应该非常熟悉。
+
+*   `@media`：如果满足媒介查询的条件则条件规则组里的规则生效
+    
+*   `@keyframes`：定义 CSS 动画的中间步骤
+    
+*   `@font-face`：描述将下载的外部的字体
+    
+
+`@keyframes` 和 `@font-face` 这两个大家肯定非常熟悉。
+
+但是 `@media` 其实内有乾坤！除了屏幕宽度媒体查询外，其实还存在非常多不同功能的媒体查询！
+
+下面我会列出一些在未来，我认为会越来越被提及使用到的 `@media` 规则。
+
+### prefers-reduced-motion 减弱动画效果
+
+prefers-reduced-motion 规则查询用于减弱动画效果，除了默认规则，只有一种语法取值 `prefers-reduced-motion: reduce`，开启了该规则后，相当于告诉用户代理，希望他看到的页面，可以删除或替换掉一些会让部分视觉运动障碍者不适的动画类型。
+
+> 规范原文：Indicates that user has notified the system that they prefer an interface that removes or replaces the types of motion-based animation that trigger discomfort for those with vestibular motion disorders.
+
+> vestibular motion disorders 是一种视觉运动障碍患者，中文我只能谷歌翻译，翻译出来是**前庭运动障碍**，我感觉不太对，谷歌了一下是一种会导致眩晕的一类病症，譬如一个动画一秒闪烁多次，就会导致患者的不适。
+
+使用方法，还是上面那段代码：
+
+```
+.ele {    animation: aniName 5s infinite linear;}@media (prefers-reduced-motion: reduce) {    .ele {        animation: none;    }}
+```
+
+如果我们有一些类似这样的动画：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jYlGL0pbfdvSGbdmThn9ictsoibuhdsib9ecosvicTFxUSXzmYjpuEI8rEA/640?wx_fmt=gif)
+
+在用户开启了 `prefers-reduced-motion: reduce` 时，就应该把它去掉。那么该如何开启这个选项呢？MDN -- prefers-reduced-motion[20] 给出的是：
+
+*   在  GTK/Gnome 中，可以通过 GNOME Tweaks （在 “通用” 或“外观”菜单中，取决于具体版本） 的配置，设置 gtk-enable-animations 的值为 false
+    
+*   可以在 GTK 3 的配置文件中的 [Settings] 模块下设置 gtk-enable-animations = false
+    
+*   在 Windows 10 中：设置 > 轻松获取 > 显示 > 在 Windows 中显示动画
+    
+*   在 Windows 7 中：控制面板 > 轻松获取 > ? 是计算机更易于查看 > 关闭不必要动画
+    
+*   在 MacOS 中：系统偏好 > 辅助使用 > 显示 > 减少运动
+    
+*   在 iOS 上：设置 > 通用 > 辅助性 > 减少运动
+    
+*   在 Android 9+ 上：设置 > 辅助性 > 移除动画
+    
+
+### prefers-color-scheme 适配明暗主题
+
+`prefers-color-scheme` 还是非常好理解的，它用于匹配用户通过操作系统设置的明亮或夜间（暗）模式。它有两个不同的取值：
+
+*   `prefers-color-scheme: light`： 明亮模式
+    
+*   `prefers-color-scheme: dark`： 夜间（暗）模式
+    
+
+语法如下，如果我们默认的是明亮模式，只需要适配夜间模式即可：
+
+```
+body {    background: white;    color: black;}@media (prefers-color-scheme: dark) {    body {        background: black;        color: white;    }}
+```
+
+当然，上述只是 CSS 代码示意，要做到两套主题的切换肯定不是这么简单，方法也很多，本文不赘述，读者可以自行了解各种实现主题切换，或者是明暗切换的方案。
+
+### prefers-contrast 调整内容色彩对比度
+
+`prefers-contrast` 该 CSS 媒体功能是用来检测用户是否要求将网页内容以更高或者更低的对比度进行呈现。其中：
+
+*   `prefers-contrast: no-preference`：默认值，不作任何变化
+    
+*   `prefers-contrast: less`：希望使用对比度更低的界面
+    
+*   `prefers-contrast: more`：希望使用对比度更高的界面
+    
+
+以 `prefers-contrast: less` 为例子，语法如下：
+
+```
+body {    background: #fff; // 文字与背景对比度为 5.74    color: #666;}// 提升对比度@media (prefers-contrast: more) {    body {        background: #fff; // 文字与背景对比度为 21        color: #000;    }}
+```
+
+上面只是伪 CSS 代码，具体可能需要对具体的一些元素进行处理，或者使用 `filter: contrast()` 全局统一处理，当开启配置时，用于实现类似这样的功能：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jwlsjUiaHvHzzjiaL0CJ8FXBFiatpyYdgwvfhdurNibcSZ8L7YZPPsU0m1Q/640?wx_fmt=png)
+
+#### 什么是色彩对比度
+
+是否曾关心过页面内容的展示，使用的颜色是否恰当？色弱、色盲用户能否正常看清内容？良好的色彩使用，在任何时候都是有益的，而且不仅仅局限于对于色弱、色盲用户。在户外用手机、阳光很强看不清，符合无障碍标准的高清晰度、高对比度文字就更容易阅读。
+
+这里就有一个概念 -- **颜色对比度**，简单地说，描述就是两种颜色在亮度（Brightness）上的差别。运用到我们的页面上，大多数的情况就是背景色（background-color）与内容颜色（color）的对比差异。
+
+最权威的互联网无障碍规范 —— WCAG AA[21] 规范规定，所有重要内容的色彩对比度需要达到 4.5:1 或以上（字号大于 18 号时达到 3:1 或以上），才算拥有较好的可读性。
+
+### prefers-reduced-transparency 减少透明元素
+
+`prefers-reduced-transparency` 该 CSS 媒体功能是用来检测用户是否要求减少网页中的透明元素：
+
+*   `prefers-contrast: no-preference`：默认值，不作任何变化
+    
+*   `prefers-contrast: reduce`：希望界面元素存在尽可能少的透明元素
+    
+
+以 `prefers-contrast: reduce` 为例子，语法如下：
+
+```
+.ele {    opacity: 0.5;}// 减少透明元素@media (prefers-contrast: reduce) {    .ele {        opacity: 1;    }}
+```
+
+我在上一次，介绍这个功能的时候，它还是一片红色，但是短短半年，整个兼容性已经有了很大的提升！
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jibdkpnicyPNa0aO6yjly1E1zSaLnricO3nqfBAeLyFApptKwTcOmib8ib5Q/640?wx_fmt=png)
+
+### prefers-reduced-data 减少数据传输
+
+对于部分网速较差的地区，或者流量很贵的情况，用户会希望减少页面中的流量请求，基于此有了 `prefers-reduced-data`。
+
+`prefers-reduced-data` 该 CSS 媒体查询功能是用于告知用户代理，希望减少页面的流量请求。
+
+*   `prefers-reduced-data: no-preference`：默认值，不作任何变化
+    
+*   `prefers-reduced-data: reduce`：希望界面元素消耗更少的互联网流量
+    
+
+以 `prefers-reduced-data: reduce` 为例子，语法如下：
+
+```
+.ele {    background-image: url(image-1800w.jpg);}// 降低图片质量@media (prefers-reduced-data: reduce) {    .ele {        background-image: url(image-600w.jpg);    }}
+```
+
+当检测到用户开启了 `prefers-reduced-data: reduce`，我们将提供压缩度更高，尺寸更小，消耗流量更少的图片。
+
+当然，上述代码只是个示意，我们可以做的其实有更多。
+
+不过，这是仍处于实验室的功能，暂时没有任何浏览器支持该媒体查询~ 😢
+
+当然，从 Chrome 85+ 开始，可以通过开启 `#enable-experimental-web-platform-features` 实验室选项开启该功能！
+
+`@supports` 特性检测
+----------------
+
+好，介绍完一些后续会非常重要从 `@media` 规则后，我们来看看 `@supports`。
+
+传统的 CSS 特性检测都是通过 javascript 实现的，但是如今，原生 CSS 即可实现特性检测的功能。
+
+CSS `@supports` 通过 CSS 语法来实现特性检测，并在内部 CSS 区块中写入如果特性检测通过希望实现的 CSS 语句。
+
+#### 语法：
+
+```
+@supports <supports_condition> {    /* specific rules */}
+```
+
+举个例子：
+
+```
+div {    position: fixed;}@supports (position:sticky) {    div {        position:sticky;    }}
+```
+
+上面的例子中，`position: sticky` 是 position 的一个比较新的属性，用于实现黏性布局，可以轻松实现一些以往需要 Javascript 才能实现的布局，但是不一定在一些低端机型上兼容。
+
+上面的写法，首先定义了 div 的 `position: fixed` ，紧接着下面一句 `@supports (position:sticky)` 则是特性检测括号内的内容，如果当前浏览器支持 `@supports` 语法，并且支持 `position:sticky` 语法，那么 div 的 则会被设置为 `position:sticky` 。
+
+我们可以看到，`@supports` 语法的核心就在于这一句：`@supports (...) { }` ，括号内是一个 CSS 表达式，如果浏览器判断括号内的表达式合法，那么接下来就会去渲染括号内的 CSS 表达式。除了这种最常规的用法，还可以配合其他几个关键字：
+
+### `@supports not` && `@supports and` && `@supports or`
+
+#### `@supports not` -- 非
+
+not 操作符可以放在任何表达式的前面来产生一个新的表达式，新的表达式为原表达式的值的否定。看个例子：
+
+```
+.container {  translate: 50% 10%;  rotate: 80deg;  scale: 1.5;}// 如果不支持上述的语法，则 supports 内的语法生效@supports not (scale: 1) {  .container {    transform: translate(50%, 10%) rotate(80deg) scale(1.5);  }}
+```
+
+因为添加了 not 关键字，所以与上面第一个例子相反，这里如果检测到浏览器不支持 transform 这种分开单独的写法 -- `scale: 1` ，则将 `.container` 的 transform 属性合在一起写，写成 `transform: translate(50%, 10%) rotate(80deg) scale(1.5)`。
+
+> 关于 transform 的分开写法，如果你还不太了解，可以戳：解放生产力！transform 支持单独赋值改变 [22]
+
+#### `@supports and` -- 与
+
+这个也好理解，多重判断，类似 javascript 的 `&&` 运算符符。用 and 操作符连接两个原始的表达式。只有两个原始表达式的值都为真，生成的表达式才为真，反之为假。
+
+当然，and 可以连接任意多个表达式看个例子：
+
+```
+p {    overflow: hidden;    text-overflow: ellipsis;}@supports (display:-webkit-box) and (-webkit-line-clamp:2) and (-webkit-box-orient:vertical) {    p {        display: -webkit-box;        -webkit-line-clamp: 2;        -webkit-box-orient: vertical;    }}
+```
+
+上面同时，检测 `@supports (display:-webkit-box) and (-webkit-line-clamp:2) and (-webkit-box-orient:vertical)` 了三个语法，如果同时支持，则设定三个 CSS 规则。这三个语法必须同时得到浏览器的支持，如果表达式为真，则可以用于实现多行省略效果：
+
+CodePen Demo - @supportAnd[23]
+
+#### `@supports or` -- 或
+
+理解了 `@supports and`，就很好理解 `@supports or` 了，与 javascript 的 `||` 运算符类似，表达式中只要有一个为真，则生成表达式表达式为真。
+
+看例子：
+
+```
+@supports (background:-webkit-linear-gradient(0deg, yellow, red)) or (background:linear-gradient(90deg, yellow, red)){    div {        background:-webkit-linear-gradient(0deg, yellow, red);        background:linear-gradient(90deg, yellow, red)    }}
+```
+
+上面的例子中，只有检测到浏览器支持 `background:-webkit-linear-gradient(0deg, yellow, red)` 或者（or） `background:linear-gradient(90deg, yellow, red)` 其中一个，则给 div 元素添加渐变。
+
+CodePen Demo -- @supports or[24]
+
+当然，关键字 `not` 还可以和 `and` 或者 `or` 混合使用。感兴趣的可以尝试一下。
+
+### Can i use？
+
+兼容性来看，先看看 Can i use(更新至 2022/10/13)[25] 吧：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jhalKvbYJ8Og8mvFAGuIkCA8mYbgutQIDjJPnibdicWmUoAUjiabRlYOIA/640?wx_fmt=png)image
+
+大部分浏览器都已经支持了，我们已经可以开始使用起来了，使用 `@supports` 实现渐进增强的效果。
+
+`@counter-style` CSS 计数器
+------------------------
+
+`@counter-style`：是一个  CSS at-rule，它让开发者可以自定义 counter 的样式。一个 @counter-style 规则定义了如何把一个计数器的值转化为字符串表示。
+
+利用 `@counter-style`，我们可以构建自定义的计数器样式。
+
+当然，在 `@counter-style` 之前，CSS 还有一种实现简单计数器的规范，它由如下几个属性共同构成：
+
+*   `counter-reset`： 初始化计数器的值
+    
+*   `counter-increment`：在初始化之后，计数器的值就可以使用 counter-increment 来指定其为递增或递减
+    
+*   `counter()`：计数器的值可以使用 counter() 或 counters() 函数以在 CSS 伪元素的 content 属性中显示
+    
+
+我们来看最简单的一个例子，我们想实现一个 ul 布局，其中的 li 个数不定，但是均分每行的空间，并且能够自动带上序号，像是这样：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jOYulCDUmAicMiatjf9JkDlNucoCS1r84VsU8NBdeAcPLLkUL50R3s6Ag/640?wx_fmt=png)
+
+使用 `counter-reset`、`counter-increment`、`counter()` 这一套，非常的简单就能实现，像是这样：
+
+```
+<ul>  <li></li>  <li></li>  <li></li>  <li></li></ul><ul>  // ... <li> 个数不定</ul><ul>  // ... <li> 个数不定</ul>
+```
+
+给每个 li 元素标序号这个事情就可以交给 CSS 计数器：
+
+```
+ul {  display: flex;  justify-content: space-around;  counter-reset: stepCount;}li {  position: relative;}li::before {  position: absolute;  counter-increment: stepCount 1;  content: counter(stepCount); }
+```
+
+简单解释一下：
+
+1.  在 `ul` 的样式中，每次都会初始化一个 CSS 计数器 `stepCount`，默认值为 0
+    
+2.  在 `li::before` 中的 `counter-increment: stepCount 1` 表示每次调用到这里，stepCount 的值加 1
+    
+3.  最后通过 `counter(stepCount)` 将当前具体的计数值通过伪元素的 content 显现出来
+    
+
+OK，那么为什么有了上述的 CSS 计数器规范后，又新增了 `@counter-style` CSS 计数器规范呢？
+
+### `@counter-style` 的意义
+
+这是因为，上述的  `counter-reset`、`counter-increment`、`counter()` 这一套更多的生成的数字类型的计数器。
+
+但是，数字类型的计数器无法满足当前全球化的排版的诉求。基于此，`@counter-style` 规则用一种开放的方式弥补了这一缺点，在预定义的样式不能满足需求时，它可以使开发者自定义他们自己的计数器样式。
+
+举个例子，我们使用 MDN 上的例子作为示例：
+
+```
+<ul>    <li>Lorem ipsum dolor sit amet, consectetur adipisicing elit. </li>    <li>Lorem ipsum dolor sit amet, consectetur adipisicing elit. </li>    <li>Lorem ipsum dolor sit amet, consectetur adipisicing elit. </li>    <li>Lorem ipsum dolor sit amet, consectetur adipisicing elit. </li></ul>
+```
+
+```
+@counter-style circled-alpha {  system: fixed;  symbols: Ⓐ Ⓑ Ⓒ Ⓓ Ⓔ Ⓕ Ⓖ Ⓗ Ⓘ Ⓙ Ⓚ Ⓛ Ⓜ Ⓝ Ⓞ Ⓟ Ⓠ Ⓡ Ⓢ Ⓣ Ⓤ Ⓥ Ⓦ Ⓧ Ⓨ Ⓩ;  suffix: " ";}li {   list-style: circled-alpha;}
+```
+
+这样，我们就可以得到自定义的计数前缀：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jgv4eaEgceQgXFuNd6aic33yZOsO7LhtYGqXdD7wVUZtLJdDcJ35A7dw/640?wx_fmt=png)
+
+有了这个，我们就可以将上述的 `symbols` 替换成其他我们喜欢我计数图形，譬如 emoji 图形：
+
+```
+@counter-style circled-alpha {  system: fixed;  symbols: 😀 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨;  suffix: " ";}li {   list-style: circled-alpha;}
+```
+
+看看效果：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8j5HdibhLRpj9H58Xc0CqhumTRict0icO6AQlWic1sqxp8H5jyJY1vIduFcw/640?wx_fmt=png)
+
+CodePen Demo -- @counter-style[26]
+
+当然，实际使用过程中，`@counter-style` 的语法会有一点点复杂，可选的属性也有很多，更为具体的可以仔细学习下文档 -- MDN -- @counter-style[27]
+
+`@property` CSS 自定义属性
+---------------------
+
+@property CSS at-rule 是 CSS Houdini API 的一部分, 它允许开发者显式地定义他们的 CSS 自定义属性，允许进行属性类型检查、设定默认值以及定义该自定义属性是否可以被继承。
+
+正常而言，我们定义和使用一个 CSS 自定义属性的方法是这样的：
+
+```
+:root {    --whiteColor: #fff;}p {    color: (--whiteColor);}
+```
+
+而有了 `@property` 规则之后，我们还可以像下述代码这样去定义个 CSS 自定义属性：
+
+```
+<style>@property --property-name {  syntax: '<color>';  inherits: false;  initial-value: #fff;}p {    color: var(--property-name);}</style>
+```
+
+简单解读下：
+
+*   `@property --property-name` 中的 `--property-name` 就是自定义属性的名称，定义后可在 CSS 中通过 `var(--property-name)` 进行引用
+    
+*   syntax：该自定义属性的语法规则，也可以理解为表示定义的自定义属性的类型
+    
+*   inherits：是否允许继承
+    
+*   initial-value：初始值
+    
+
+其中，`@property` 规则中的 syntax 和 inherits 描述符是必需的。
+
+当然，在 JavaScript 内定义的写法也很简单，顺便一提：
+
+```
+<script>CSS.registerProperty({  name: "--property-name",  syntax: "<color>",  inherits: false,  initialValue: "#c0ffee"});</script>
+```
+
+### CSS @property 的优势
+
+为什么要使用这么麻烦的语法定义 CSS 自定义属性呢？CSS Houdini 定义的自定义变量的优势在哪里？
+
+我们来看这样一个例子，我们有这样一个渐变的图案：
+
+```
+<div></div>
+```
+
+```
+div {    background: linear-gradient(45deg, #fff, #000);}
+```
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jXPibs3xAsk8bytcNoh4y2LqsIm77bTw4JC882gqWJAeI6AmZGbHbmQw/640?wx_fmt=png)
+
+我们改造下上述代码，改为使用 CSS 自定义属性：
+
+```
+:root {    --colorA: #fff;    --colorB: #000;}div {    background: linear-gradient(45deg, var(--colorA), var(--colorB));}
+```
+
+得到的还是同样的一个渐变图：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jXPibs3xAsk8bytcNoh4y2LqsIm77bTw4JC882gqWJAeI6AmZGbHbmQw/640?wx_fmt=png)
+
+我们再加上一个过渡效果：
+
+```
+:root {    --colorA: #fff;    --colorB: #000;}div {    background: linear-gradient(45deg, var(--colorA), var(--colorB));    transition: 1s background;        &:hover {        --colorA: yellowgreen;        --colorB: deeppink;    }}
+```
+
+看看鼠标 Hover 的时候，会发生什么：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jrPGFrOCohyzZXqSHT4AyD9vkK7DJlqaxgAjq4gSuXWA6Cvvp3BfSaw/640?wx_fmt=gif)
+
+虽然我们设定了 1s 的过渡动画 `transition: 1s background`，但是很可惜，CSS 是不支持背景渐变色的直接过渡变化的，我们得到的只是两帧之间的直接变化。
+
+### 使用 CSS @property 进行改造
+
+OK，接下来我们就使用本文的主角，使用 Houdini API 中的 CSS 自定义属性替换原本的 CSS 自定义属性。
+
+简单进行改造一下，使用 `color` syntax 语法类型：
+
+```
+@property --houdini-colorA {  syntax: '<color>';  inherits: false;  initial-value: #fff;}@property --houdini-colorB {  syntax: '<color>';  inherits: false;  initial-value: #000;}.property {    background: linear-gradient(45deg, var(--houdini-colorA), var(--houdini-colorB));    transition: 1s --houdini-colorA, 1s --houdini-colorB;        &:hover {        --houdini-colorA: yellowgreen;        --houdini-colorB: deeppink;    }}
+```
+
+我们使用了 `@property` 语法，定义了两个 CSS Houdini 自定义变量 `--houdini-colorA` 和 `--houdini-colorB`，在 hover  变化的时候，改变这两个颜色。
+
+需要关注的是，我们设定的过渡语句 `transition: 1s --houdini-colorA, 1s --houdini-colorB`，在这里，**我们是针对 CSS Houdini 自定义变量设定过渡，而不是针对 `background` 设定过渡动画**，再看看这次的效果：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jbGasq5fe8Aw2vc1vRoiafs95gF9FmiaNvN24ZJTSkWy6KXONc8uOt8dg/640?wx_fmt=gif)
+
+Wow，成功了，渐变色的变化从两帧的逐帧动画变成了补间动画，实现了从一个渐变色过渡到另外一个渐变色的效果！而这，都得益于 CSS Houdini 自定义变量的强大能力！
+
+CodePen Demo -- CSS Houdini 自定义变量实现渐变色过渡动画 [28]
+
+CSS @property 规则的强大之处在于，很多以往无法使用 CSS 进行动画的效果，如今，借助它都可以实现！
+
+> 更多 CSS @property 的用法，你可以戳 CSS @property，让不可能变可能 [29]
+
+`@layer`
+--------
+
+`@layer` 可谓是 CSS 圈 2022 年最受瞩目的新特性。
+
+它的出现，目的在于让大型项目中的 CSS 文件及内容，可以得到更好的控制和管理。
+
+CSS @layer 从 CSS Cascading and Inheritance Level 5[30] 被规范定义。
+
+何为 CSS @layer？简单而言，CSS[31] @规则 [32] 中的 @layer 声明了一个 级联层， 同一层内的规则将级联在一起， 这给予了开发者对层叠机制的更多控制。
+
+语法也非常简单，看这样一个例子：
+
+```
+@layer utilities {  /* 创建一个名为 utilities 的级联层 */}
+```
+
+这样，我们就创建一个名为 utilities 的 @layer 级联层。
+
+@layer 级联层如何使用呢？
+
+### 通过 @layer 级联层管理样式优先级
+
+**@layer 级联层最大的功能，就是用于控制不同样式之间的优先级**。
+
+看下面这样一个例子，我们定义了两个 @layer 级联层 A 和 B：
+
+```
+<div></div>
+```
+
+```
+div {    width: 200px;    height: 200px;}@layer A {    div {        background: blue;    }}@layer B {    div {        background: green;    }}
+```
+
+由于 `@layer B` 的顺序排在 `@layer A` 之后，所以 `@layer B` 内的所有样式优先级都会比 `@layer A` 高，最终 div 的颜色为 `green`：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jy0pbzVtM9glF1fPoSRNdansNnmJQ8aP6cFqXia8hic194vD5hicCd8yVg/640?wx_fmt=png)
+
+当然，如果页面内的 @layer 太多，可能不太好记住所有 @layer 的顺序，因此，还有这样一种写法。
+
+我们可以同时命名多个 @layer 层，其后再补充其中的样式规则。
+
+```
+<div></div>
+```
+
+```
+@layer B, C, A;div {    width: 200px;    height: 200px;}@layer A {    div {        background: blue;    }}@layer B {    div {        background: green;    }}@layer C {    div {        background: orange;    }}
+```
+
+上述代码，我们首先定义了 `@layer B, C, A` 三个 @layer 级联层。而后再后面的 CSS 代码中补充了每个级联层的 CSS 代码，但是样式的优先级为：
+
+**A** > **C** > **B**
+
+因此，最终的 div 的颜色值为 @layer A 中定义的颜色，为 `blue`：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jMobnczkxQBFVStgAPzQZXeGjO0iarlycaLkbYTkMHTjTia8plJjLUQOQ/640?wx_fmt=png)
+
+到这里，CSS @layer 的作用可以清晰的被窥见。
+
+**利用 CSS @layer，我们可以将 CSS 不同模块划入不同的 @layer 中，利用先后顺序，非常好的去控制全局的样式优先级**。
+
+CSS @layer 的诞生，让我们有能力更好的划分页面的样式层级，更好的处理内部样式与外部引用样式的优先级顺序，属于比较重大的一次革新。
+
+> 这里只是非常简单的介绍了 @layer 规则，更详细的，你可以戳这里：2022 年最受瞩目的新特性 CSS @layer 到底是个啥？[33]
+
+`@container` 容器查询
+-----------------
+
+`@container`：提供了一种，基于容器的可用宽度来改变布局的方式。
+
+容器查询也是一个非常新且重要的特性，弥补了过往媒体查询的不足。
+
+在之前，响应式有这么个掣肘。同一 DOM 的不同布局形态如果想要变化，需要依赖诸如**媒体查询**来实现。
+
+像是这样：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jp6W8SF6CAKBTkumblET1Sbky6ncpag1quxntVy1qebFx1MxN5ogx4A/640?wx_fmt=gif)
+
+通过浏览器视窗大小的变化，借助媒体查询，实现不一样的布局。
+
+但是，在现如今，大部分 PC 端页面使用的是基于 Flex/Grid 的弹性布局。
+
+很多时候，当内容数不确定的时候，即便是相同的浏览器视窗宽度下，元素的布局及宽度可能也是不一致的。
+
+考虑下面这种情况：
+
+```
+<!-- 情况一  --><ul class="wrap">    <li></li>    <li></li>    <li></li></ul><!-- 情况二  --><ul class="wrap">    <li></li>    <li></li>    <li></li>    <li></li></ul>
+```
+
+```
+.wrap {    display: flex;    flex-wrap: wrap;    gap: 10px;}li {    width: 190px;    height: 100px;    flex-grow: 1;    flex-shrink: 0;}
+```
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8j9tmTUib3qP8AQkZm8xia4G5naoc7Qibod1jycdiajTNMpvcNKyvs8ic1BnA/640?wx_fmt=png)
+
+这种情况下，如果需要在不同宽度下对最后一个元素做一下处理，传统方式还是比较麻烦的。
+
+在这种情况下，容器查询（CSS Container Queries）就应运而生了！
+
+### 容器查询的能力
+
+容器查询它给予了 CSS，在不改变浏览器视口宽度的前提下，只是根据容器的宽度变化，对布局做成调整的能力。
+
+还是上面的例子，简单的代码示意：
+
+```
+<div class="wrap">    <div class="g-container">        <div class="child">Title</div>        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus vel eligendi, esse illum similique sint!!</p>    </div></div>
+```
+
+```
+.wrap {    width: 500px;    resize: horizontal;    overflow: auto;}.g-container {    display: flex;    flex-wrap: nowrap;}.wrap {    /* CSS CONTAINER */    container-name: wrap;    container-type: inline-size;}@container wrap (max-width: 400px) {    .g-container {        flex-wrap: wrap;        flex-direction: column;    }}
+```
+
+像是这样，我们通过 `resize: horizontal` 来模拟单个容器的宽度变化，在这种情况下，容器查询能够做到在不同宽度下，改变容器内部的布局。
+
+这样，就简单实现了一个容器查询功能：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8j1AIdT1n3tdX1Lg70aShmvrXIY6wG8hgvnNd0hEgsibGLoCMsBEsRvjQ/640?wx_fmt=gif)
+
+注意，仔细和上面的例子作对比，这里，**浏览器的视口宽度是没有变化的，变化的只是容器的宽度！**
+
+媒体查询与容器查询的异同，通过一张简单的图看看，核心的点在于容器的宽度发生变化时，视口的宽度不一定会发生变化：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jTSvsXmR0M28xnYKMiccb5s9vsXJm4V8f3ibiaYkQib9A8qMdZEZhEgzz4A/640?wx_fmt=png)
+
+我们简单拆解下上述的代码，非常好理解。
+
+1.  在 `.warp` 的样式中，通过 `container-name: wrap` 注册一个容器
+    
+2.  注册完容器之后，便可以通过 `@container wrap ()` 容器查询语法，在内部写入不同情况下的另外一套样式
+    
+3.  这里 `@container wrap (max-width: 400px) {}` 的意思便是，当 `.wrap` 容器的宽度小于 400 px 时，采用内部定义的样式，否则，使用外部默认的样式
+    
+
+关于容器查询更为具体的语法，我建议还是上 MDN 或者规范详细看看 -- MDN -- CSS Container Queries[34]
+
+`@scroll-timeline`
+------------------
+
+在之前，我介绍了 CSS 最新的特性 `@scroll-timeline`，譬如这两篇文章：
+
+*   革命性创新，动画杀手锏 @scroll-timeline[35]
+    
+*   超酷炫的转场动画？CSS 轻松拿下！[36]
+    
+
+`@scroll-timeline` 能够设定一个动画的开始和结束由滚动容器内的滚动进度决定，而不是由时间决定。
+
+意思是，我们可以定义一个动画效果，该动画的开始和结束可以通过容器的滚动来进行控制。
+
+利用它，我们可以使用纯 CSS 实现页面滚动与 CSS 动画的结合，像是这样：
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jiblP1N0zBzAByBoasdZaqNzjOyjADQDxVMXGJ961kQlnYLaTnDP8N7Q/640?wx_fmt=gif)
+
+遗憾的是，这个如此好的特性，最近已经被规范废弃，已经不再推荐使用了：
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNJFicscEiaTfhxpCGxGlwFz8jic3bo5wbGvYmDjJUeiab7cmhiaEt2NMYOiavbz5Jic4t3g0P5dqjRY7uCuA/640?wx_fmt=png)
+
+意思是，即便目前有一些浏览器已经支持了 `@scroll-timeline`，但是它很快又将要退出历史舞台。不再建议再使用这个 at-rule 规则。
+
+总结一下
+----
+
+到这里，其实还有几个非常冷门且不太实用的 at-rule 规则，譬如：
+
+*   `@color-profile`：允许定义并命名一个颜色配置文件
+    
+*   `@font-feature-values`：主要是相对字体功能的拓展
+    
+
+能够搜集到资料太少，文档也相对简陋，目前实用的场景太少，就不详细展开。
+
+综上，可以看到，整个 at-rule 家族还是非常强大的，引入了非常多新的特性及功能，让 CSS 生态愈发强大。让 CSS 可以做到的事情越来越多，我们也有理由期待未来 CSS 会在 Web 领域扮演愈发重要的角色。
+
+好了，本文到此结束，希望本文对你有所帮助 :)
+
+如果还有什么疑问或者建议，可以多多交流，原创文章，文笔有限，才疏学浅，文中若有不正之处，万望告知。
+
+### 参考资料
+
+[1]
+
+CSS 语句: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/Syntax#css_statements_
+
+[2]
+
+`@charset`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@charset_
+
+[3]
+
+`@import`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@import_
+
+[4]
+
+`@namespace`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@namespace_
+
+[5]
+
+`@media`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@media_
+
+[6]
+
+`@page`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@page_
+
+[7]
+
+`@font-face`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@font-face_
+
+[8]
+
+`@keyframes`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@keyframes_
+
+[9]
+
+`@supports`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@supports_
+
+[10]
+
+`@document`: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@document_
+
+[11]
+
+`@viewport`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@viewport_
+
+[12]
+
+`@counter-style`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@counter-style_
+
+[13]
+
+`@font-feature-values`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@font-feature-values_
+
+[14]
+
+font-variant-alternates: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/font-variant-alternates_
+
+[15]
+
+`@property`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@property_
+
+[16]
+
+CSS Houdini: _https://developer.mozilla.org/zh-CN/docs/Web/Guide/Houdini_
+
+[17]
+
+css 自定义属性: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/--_*
+
+[18]
+
+`@layer`: _https://developer.mozilla.org/en-US/docs/Web/CSS/@layer_
+
+[19]
+
+spacing-out-on-css-namespaces.: _http://nimbupani.com/spacing-out-on-css-namespaces.html_
+
+[20]
+
+MDN -- prefers-reduced-motion: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media/prefers-reduced-motion_
+
+[21]
+
+WCAG AA: _https://www.w3.org/Translations/WCAG21-zh/_
+
+[22]
+
+解放生产力！transform 支持单独赋值改变: _https://juejin.cn/post/7152331836578856967_
+
+[23]
+
+CodePen Demo - @supportAnd: _http://codepen.io/Chokcoco/pen/EWjbpv?editors=1100_
+
+[24]
+
+CodePen Demo -- @supports or: _http://codepen.io/Chokcoco/pen/yMNvvZ_
+
+[25]
+
+Can i use(更新至 2022/10/13): _http://caniuse.com/#search=%40supports_
+
+[26]
+
+CodePen Demo -- @counter-style: _https://codepen.io/pen?template=rNvoJYE_
+
+[27]
+
+MDN -- @counter-style: _https://developer.mozilla.org/zh-CN/docs/Web/CSS/@counter-style_
+
+[28]
+
+CodePen Demo -- CSS Houdini 自定义变量实现渐变色过渡动画: _https://codepen.io/Chokcoco/pen/eYgyWLB?editors=1100_
+
+[29]
+
+CSS @property，让不可能变可能: _https://github.com/chokcoco/iCSS/issues/109_
+
+[30]
+
+CSS Cascading and Inheritance Level 5: _https://www.w3.org/TR/css-cascade-5/#at-layer_
+
+[31]
+
+CSS: _https://developer.mozilla.org/en-US/docs/Web/CSS_
+
+[32]
+
+@规则: _https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule_
+
+[33]
+
+2022 年最受瞩目的新特性 CSS @layer 到底是个啥？: _https://github.com/chokcoco/iCSS/issues/171_
+
+[34]
+
+MDN -- CSS Container Queries: _https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Container_Queries_
+
+[35]
+
+革命性创新，动画杀手锏 @scroll-timeline: _https://github.com/chokcoco/iCSS/issues/166_
+
+[36]
+
+超酷炫的转场动画？CSS 轻松拿下！: _https://github.com/chokcoco/iCSS/issues/191_
+
+![](https://mmbiz.qpic.cn/mmbiz_png/SMw0rcHsoNLAKEL00pOAy3DCthdVEybxIyEB5d9819WpqDIVaKIib5QC57tITUiaWqibLShibbYW3OGPyHODjMicJ0w/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
+
+### 
+
+如果觉得还不错，欢迎点赞、收藏、转发❤❤
