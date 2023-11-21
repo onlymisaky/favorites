@@ -1,0 +1,1449 @@
+> 本文由 [简悦 SimpRead](http://ksria.com/simpread/) 转码， 原文地址 [mp.weixin.qq.com](https://mp.weixin.qq.com/s/XYJdQmB7rdGBwiWeZyRtzQ)
+
+点击上方 高级前端进阶，回复 “加群”  
+
+加入我们一起学习，天天进步![](https://mmbiz.qpic.cn/sz_mmbiz_png/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaFo0sNpX4zb9HicezSvCnuwbpmYlGxzbWqwnUuKibHrbVcL4iaqZ5DwShQ/640?wx_fmt=png)
+
+* * *
+
+不知不觉，已是八月中旬。最近有很多大四的小伙伴都在跟我谈论**秋招面试**的问题，其实对于面试，我也没有太多的经验，只能默默地把之前整理的前端面试题分享给 Ta。今天就来大致的梳理一下前端的面试体系（每一部分最后都有相应的面试题参考答案哦）。
+
+### 1. 前端知识体系
+
+在说前端面试体系之前，先来看一下之前整理的前端知识体系图（可能不太完整，毕竟我只是一个刚毕业一个多月的小菜鸡），这只是一个基础版的前端知识体系图，适合刚入门前端的小伙伴参考，大佬勿喷：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaaWhicmke7Xgyg9OFcbe52eJOia0lEebKydztTkBuiaIKWcmfC4oicwJwdw/640?wx_fmt=other)
+
+### 2. HTML
+
+#### （1）面试题目
+
+常考的 HTML 面试题：
+
+1.  src 和 href 的区别
+    
+2.  对 HTML 语义化的理解
+    
+3.  DOCTYPE(⽂档类型) 的作⽤
+    
+4.  script 标签中 defer 和 async 的区别
+    
+5.  常⽤的 meta 标签有哪些
+    
+6.  HTML5 有哪些更新
+    
+7.  img 的 srcset 属性的作⽤？
+    
+8.  行内元素有哪些？块级元素有哪些？空 (void) 元素有那些？
+    
+9.  说一下 web worker
+    
+10.  HTML5 的离线储存怎么使用，它的工作原理是什么
+    
+11.  浏览器是如何对 HTML5 的离线储存资源进行管理和加载？
+    
+12.  title 与 h1 的区别、b 与 strong 的区别、i 与 em 的区别？
+    
+13.  iframe 有那些优点和缺点？
+    
+14.  label 的作用是什么？如何使用？
+    
+15.  Canvas 和 SVG 的区别
+    
+16.  head 标签有什么作用，其中什么标签必不可少？
+    
+17.  文档声明（Doctype）和有何作用? 严格模式与混杂模式如何区分？它们有何意义?
+    
+18.  浏览器乱码的原因是什么？如何解决？
+    
+19.  渐进增强和优雅降级之间的区别
+    
+20.  说一下 HTML5 drag API
+    
+
+#### （2）思维导图
+
+下图对 HTML 面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAadkqSWoZSTkzqLnPNI7wiaJPzlgVmvu4LYI9dak4S174dXYCFibWGpJsg/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：****「2021」高频前端面试题汇总之 HTML 篇 **[2]
+
+### 2. CSS
+
+#### （1）面试题目
+
+常考的 CSS 面试题：
+
+**一、CSS 基础**
+
+1.  CSS 选择器及其优先级
+    
+2.  CSS 中可继承与不可继承属性有哪些
+    
+3.  display 的属性值及其作用
+    
+4.  display 的 block、inline 和 inline-block 的区别
+    
+5.  隐藏元素的方法有哪些
+    
+6.  link 和 @import 的区别
+    
+7.  transition 和 animation 的区别
+    
+8.  display:none 与 visibility:hidden 的区别
+    
+9.  伪元素和伪类的区别和作用？
+    
+10.  对 requestAnimationframe 的理解
+    
+11.  对盒模型的理解
+    
+12.  为什么有时候⽤ translate 来改变位置⽽不是定位？
+    
+13.  li 与 li 之间有看不见的空白间隔是什么原因引起的？如何解决？
+    
+14.  CSS3 中有哪些新特性
+    
+15.  替换元素的概念及计算规则
+    
+16.  常见的图片格式及使用场景
+    
+17.  对 CSSSprites 的理解
+    
+18.  什么是物理像素，逻辑像素和像素密度，为什么在移动端开发时需要用到 @3x, @2x 这种图片？
+    
+19.  margin 和 padding 的使用场景
+    
+20.  对 line-height 的理解及其赋值方式
+    
+21.  CSS 优化和提高性能的方法有哪些？
+    
+22.  CSS 预处理器 / 后处理器是什么？为什么要使用它们？
+    
+23.  ::before 和 :after 的双冒号和单冒号有什么区别？
+    
+24.  display:inline-block 什么时候会显示间隙？
+    
+25.  单行、多行文本溢出隐藏
+    
+26.  Sass、Less 是什么？为什么要使用他们？
+    
+27.  对媒体查询的理解？
+    
+28.  对 CSS 工程化的理解
+    
+29.  如何判断元素是否到达可视区域
+    
+30.  z-index 属性在什么情况下会失效
+    
+31.  CSS3 中的 transform 有哪些属性
+    
+
+**二、页面布局**
+
+1.  常见的 CSS 布局单位
+    
+2.  px、em、rem 的区别及使用场景
+    
+3.  两栏布局的实现
+    
+4.  三栏布局的实现
+    
+5.  水平垂直居中的实现
+    
+6.  如何根据设计稿进行移动端适配？
+    
+7.  对 Flex 布局的理解及其使用场景
+    
+8.  响应式设计的概念及基本原理
+    
+
+**三、定位与浮动**
+
+1.  为什么需要清除浮动？清除浮动的方式
+    
+2.  使用 clear 属性清除浮动的原理？
+    
+3.  对 BFC 的理解，如何创建 BFC
+    
+4.  什么是 margin 重叠问题？如何解决？
+    
+5.  元素的层叠顺序
+    
+6.  position 的属性有哪些，区别是什么
+    
+7.  display、float、position 的关系
+    
+8.  absolute 与 fixed 共同点与不同点
+    
+9.  对 sticky 定位的理解
+    
+
+**四、场景应用**
+
+1.  实现一个三角形
+    
+2.  实现一个扇形
+    
+3.  实现一个宽高自适应的正方形
+    
+4.  画一条 0.5px 的线
+    
+5.  设置小于 12px 的字体
+    
+6.  如何解决 1px 问题？
+    
+
+#### （2）思维导图
+
+下图对 CSS 面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaJBgZYBGyNbaOb4z5U9r5eP3QXmUmSthXZvP0ZkianRXuLF8gUNal4LQ/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**「2021」高频前端面试题汇总之 CSS 篇 [3]
+
+### 3. JavaScript
+
+#### （1）面试题目
+
+**一、数据类型**
+
+1.  JavaScript 有哪些数据类型，它们的区别？
+    
+2.  数据类型检测的方式有哪些
+    
+3.  判断数组的方式有哪些
+    
+4.  null 和 undefined 区别
+    
+5.  typeof null 的结果是什么，为什么？
+    
+6.  intanceof 操作符的实现原理及实现
+    
+7.  为什么 0.1+0.2 ! == 0.3，如何让其相等
+    
+8.  如何获取安全的 undefined 值？
+    
+9.  typeof NaN 的结果是什么？
+    
+10.  isNaN 和 Number.isNaN 函数的区别？
+    
+11.  == 操作符的强制类型转换规则？
+    
+12.  其他值到字符串的转换规则？
+    
+13.  其他值到数字值的转换规则？
+    
+14.  其他值到布尔类型的值的转换规则？
+    
+15.  || 和 && 操作符的返回值？
+    
+16.  Object.is() 与比较操作符 “===”、“==” 的区别？
+    
+17.  什么是 JavaScript 中的包装类型？
+    
+18.  JavaScript 中如何进行隐式类型转换？
+    
+19.  + 操作符什么时候用于字符串的拼接？
+    
+20.  为什么会有 BigInt 的提案？
+    
+21.  object.assign 和扩展运算法是深拷贝还是浅拷贝，两者区别
+    
+
+**二、ES6**
+
+1.  let、const、var 的区别
+    
+2.  const 对象的属性可以修改吗
+    
+3.  如果 new 一个箭头函数的会怎么样
+    
+4.  箭头函数与普通函数的区别
+    
+5.  箭头函数的 this 指向哪⾥？
+    
+6.  扩展运算符的作用及使用场景
+    
+7.  Proxy 可以实现什么功能？
+    
+8.  对对象与数组的解构的理解
+    
+9.  如何提取高度嵌套的对象里的指定属性？
+    
+10.  对 rest 参数的理解
+    
+11.  ES6 中模板语法与字符串处理
+    
+
+**三、JavaScript 基础**
+
+1.  new 操作符的实现原理
+    
+2.  map 和 Object 的区别
+    
+3.  map 和 weakMap 的区别
+    
+4.  JavaScript 有哪些内置对象
+    
+5.  常用的正则表达式有哪些？
+    
+6.  对 JSON 的理解
+    
+7.  JavaScript 脚本延迟加载的方式有哪些？
+    
+8.  JavaScript 类数组对象的定义？
+    
+9.  数组有哪些原生方法？
+    
+10.  Unicode、UTF-8、UTF-16、UTF-32 的区别？
+    
+11.  常见的位运算符有哪些？其计算规则是什么？
+    
+12.  为什么函数的 arguments 参数是类数组而不是数组？如何遍历类数组?
+    
+13.  什么是 DOM 和 BOM？
+    
+14.  对类数组对象的理解，如何转化为数组
+    
+15.  escape、encodeURI、encodeURIComponent 的区别
+    
+16.  对 AJAX 的理解，实现一个 AJAX 请求
+    
+17.  JavaScript 为什么要进行变量提升，它导致了什么问题？
+    
+18.  什么是尾调用，使用尾调用有什么好处？
+    
+19.  ES6 模块与 CommonJS 模块有什么异同？
+    
+20.  常见的 DOM 操作有哪些
+    
+21.  use strict 是什么意思 ? 使用它区别是什么？
+    
+22.  如何判断一个对象是否属于某个类？
+    
+23.  强类型语言和弱类型语言的区别
+    
+24.  解释性语言和编译型语言的区别
+    
+25.  for...in 和 for...of 的区别
+    
+26.  如何使用 for...of 遍历对象
+    
+27.  ajax、axios、fetch 的区别
+    
+28.  数组的遍历方法有哪些
+    
+29.  forEach 和 map 方法有什么区别
+    
+
+**四、原型与原型链**
+
+1.  对原型、原型链的理解
+    
+2.  原型修改、重写
+    
+3.  原型链指向
+    
+4.  原型链的终点是什么？如何打印出原型链的终点？
+    
+5.  如何获得对象非原型链上的属性？
+    
+
+**五、执行上下文 / 作用域链 / 闭包**
+
+1.  对闭包的理解
+    
+2.  对作用域、作用域链的理解
+    
+3.  对执行上下文的理解
+    
+
+**六、this/call/apply/bind**
+
+1.  对 this 对象的理解
+    
+2.  call() 和 apply() 的区别？
+    
+3.  实现 call、apply 及 bind 函数
+    
+
+**七、异步编程**
+
+1.  异步编程的实现方式？
+    
+2.  setTimeout、Promise、Async/Await 的区别
+    
+3.  对 Promise 的理解
+    
+4.  Promise 的基本用法
+    
+5.  Promise 解决了什么问题
+    
+6.  Promise.all 和 Promise.race 的区别的使用场景
+    
+7.  对 async/await 的理解
+    
+8.  await 到底在等啥？
+    
+9.  async/await 的优势
+    
+10.  async/await 对比 Promise 的优势
+    
+11.  async/await 如何捕获异常
+    
+12.  并发与并行的区别？
+    
+13.  什么是回调函数？回调函数有什么缺点？如何解决回调地狱问题？
+    
+14.  setTimeout、setInterval、requestAnimationFrame 各有什么特点？
+    
+
+**八、面向对象**
+
+1.  对象创建的方式有哪些？
+    
+2.  对象继承的方式有哪些？
+    
+
+**九、垃圾回收与内存泄漏**
+
+1.  浏览器的垃圾回收机制
+    
+2.  哪些情况会导致内存泄漏
+    
+
+#### （2）思维导图
+
+下图对 JavaScript 面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAausvichHa8tlzkdcV3eBch7FobF6da9DliaLrSfTb3bhxtr8CzBQClicIA/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**
+
+*   「2021」高频前端面试题汇总之 JavaScript 篇（上）[4]
+    
+*   「2021」高频前端面试题汇总之 JavaScript 篇（下）[5]
+    
+
+### 4. Vue
+
+#### （1）面试题目
+
+**一、Vue 基础**
+
+1.  Vue 的基本原理
+    
+2.  双向数据绑定的原理
+    
+3.  使用 Object.defineProperty() 来进行数据劫持有什么缺点？
+    
+4.  MVVM、MVC、MVP 的区别
+    
+5.  Computed 和 Watch 的区别
+    
+6.  Computed 和 Methods 的区别
+    
+7.  slot 是什么？有什么作用？原理是什么？
+    
+8.  过滤器的作用，如何实现一个过滤器
+    
+9.  如何保存页面的当前的状态
+    
+10.  常见的事件修饰符及其作用
+    
+11.  v-if、v-show、v-html 的原理
+    
+12.  v-if 和 v-show 的区别
+    
+13.  v-model 是如何实现的，语法糖实际是什么？
+    
+14.  v-model 可以被用在自定义组件上吗？如果可以，如何使用？
+    
+15.  data 为什么是一个函数而不是对象
+    
+16.  对 keep-alive 的理解，它是如何实现的，具体缓存的是什么？
+    
+17.  $nextTick 原理及作用
+    
+18.  Vue 中给 data 中的对象属性添加一个新的属性时会发生什么？如何解决？
+    
+19.  Vue 中封装的数组方法有哪些，其如何实现页面更新
+    
+20.  Vue 单页应用与多页应用的区别
+    
+21.  Vue template 到 render 的过程
+    
+22.  Vue data 中某一个属性的值发生改变后，视图会立即同步执行重新渲染吗？
+    
+23.  简述 mixin、extends 的覆盖逻辑
+    
+24.  描述下 Vue 自定义指令
+    
+25.  子组件可以直接改变父组件的数据吗？
+    
+26.  Vue 是如何收集依赖的？
+    
+27.  对 React 和 Vue 的理解，它们的异同
+    
+28.  Vue 的优点
+    
+29.  assets 和 static 的区别
+    
+30.  delete 和 Vue.delete 删除数组的区别
+    
+31.  vue 如何监听对象或者数组某个属性的变化
+    
+32.  什么是 mixin ？
+    
+33.  Vue 模版编译原理
+    
+34.  对 SSR 的理解
+    
+35.  Vue 的性能优化有哪些
+    
+36.  对 SPA 单页面的理解，它的优缺点分别是什么？
+    
+37.  template 和 jsx 的有什么分别？
+    
+38.  vue 初始化页面闪动问题
+    
+39.  extend 有什么作用
+    
+40.  mixin 和 mixins 区别
+    
+41.  MVVM 的优缺点?
+    
+
+**二、生命周期**
+
+1.  说一下 Vue 的生命周期
+    
+2.  Vue 子组件和父组件执行顺序
+    
+3.  created 和 mounted 的区别
+    
+4.  一般在哪个生命周期请求异步数据
+    
+5.  keep-alive 中的生命周期哪些
+    
+
+**三、组件通信**
+
+1.  组件通信的方式
+    
+
+四、路由
+
+1.  Vue-Router 的懒加载如何实现
+    
+2.  路由的 hash 和 history 模式的区别
+    
+3.  如何获取页面的 hash 变化
+    
+4.  route 和 route 和 route 和 router 的区别
+    
+5.  如何定义动态路由？如何获取传过来的动态参数？
+    
+6.  Vue-router 路由钩子在生命周期的体现
+    
+7.  Vue-router 跳转和 location.href 有什么区别
+    
+8.  params 和 query 的区别
+    
+9.  Vue-router 导航守卫有哪些
+    
+10.  对前端路由的理解
+    
+
+**五、Vuex**
+
+1.  Vuex 的原理
+    
+2.  Vuex 中 action 和 mutation 的区别
+    
+3.  Vuex 和 localStorage 的区别
+    
+4.  Redux 和 Vuex 有什么区别，它们的共同思想
+    
+5.  为什么要用 Vuex 或者 Redux
+    
+6.  Vuex 有哪几种属性？
+    
+7.  Vuex 和单纯的全局对象有什么区别？
+    
+8.  为什么 Vuex 的 mutation 中不能做异步操作？
+    
+9.  Vuex 的严格模式是什么, 有什么作用，如何开启？
+    
+10.  如何在组件中批量使用 Vuex 的 getter 属性
+    
+11.  如何在组件中重复使用 Vuex 的 mutation
+    
+
+**六、Vue 3.0**
+
+1.  Vue3.0 有什么更新
+    
+2.  defineProperty 和 proxy 的区别
+    
+3.  Vue3.0 为什么要用 proxy？
+    
+4.  Vue 3.0 中的 Vue Composition API？
+    
+5.  Composition API 与 React Hook 很像，区别是什么
+    
+
+**七、虚拟 DOM**
+
+1.  对虚拟 DOM 的理解？
+    
+2.  虚拟 DOM 的解析过程
+    
+3.  为什么要用虚拟 DOM
+    
+4.  虚拟 DOM 真的比真实 DOM 性能好吗
+    
+5.  DIFF 算法的原理
+    
+6.  Vue 中 key 的作用
+    
+7.  为什么不建议用 index 作为 key?
+    
+
+#### （2）思维导图
+
+下图对 Vue 面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaaPvWmnxBqLCUKcEzByHkHehHSqBF3tzkep7Lu4S9NKX92UrBEb7uDw/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**
+
+*   「2021」高频前端面试题汇总之 Vue 篇（上）[6]
+    
+*   「2021」高频前端面试题汇总之 Vue 篇（下）[7]
+    
+
+### 5. React
+
+#### （1）面试题目
+
+**一、组件基础**
+
+1.  React 事件机制
+    
+2.  React 的事件和普通的 HTML 事件有什么不同？
+    
+3.  React 组件中怎么做事件代理？它的原理是什么？
+    
+4.  React 高阶组件、Render props、hooks 有什么区别，为什么要不断迭代
+    
+5.  React 如何获取组件对应的 DOM 元素？
+    
+6.  React 中可以在 render 访问 refs 吗？为什么？
+    
+7.  对 React 的插槽 (Portals) 的理解，如何使用，有哪些使用场景
+    
+8.  在 React 中如何避免不必要的 render？
+    
+9.  对 React-Intl 的理解，它的工作原理？
+    
+10.  对 React context 的理解
+    
+11.  为什么 React 并不推荐优先考虑使用 Context？
+    
+12.  React 中什么是受控组件和非控组件？
+    
+13.  React 中 refs 的作用是什么？有哪些应用场景？
+    
+14.  React 组件的构造函数有什么作用？它是必须的吗？
+    
+15.  React.forwardRef 是什么？它有什么作用？
+    
+16.  类组件与函数组件有什么异同？
+    
+17.  React 中可以在 render 访问 refs 吗？为什么？
+    
+18.  对 React 的插槽 (Portals) 的理解，如何使用，有哪些使用场景
+    
+19.  在 React 中如何避免不必要的 render？
+    
+20.  对 React-Intl 的理解，它的工作原理？
+    
+21.  对 React context 的理解
+    
+22.  为什么 React 并不推荐优先考虑使用 Context？
+    
+23.  React 中什么是受控组件和非控组件？
+    
+24.  React 中 refs 的作用是什么？有哪些应用场景？
+    
+25.  React 组件的构造函数有什么作用？它是必须的吗？
+    
+26.  React.forwardRef 是什么？它有什么作用？
+    
+27.  类组件与函数组件有什么异同？
+    
+
+**二、数据管理**
+
+1.  React setState 调用的原理
+    
+2.  React setState 调用之后发生了什么？是同步还是异步？
+    
+3.  React 中的 setState 批量更新的过程是什么？
+    
+4.  React 中有使用过 getDefaultProps 吗？它有什么作用？
+    
+5.  React 中 setState 的第二个参数作用是什么？
+    
+6.  React 中的 setState 和 replaceState 的区别是什么？
+    
+7.  在 React 中组件的 this.state 和 setState 有什么区别？
+    
+8.  state 是怎么注入到组件的，从 reducer 到组件经历了什么样的过程
+    
+9.  React 组件的 state 和 props 有什么区别？
+    
+10.  React 中的 props 为什么是只读的？
+    
+11.  在 React 中组件的 props 改变时更新组件的有哪些方法？
+    
+12.  React 中怎么检验 props？验证 props 的目的是什么？
+    
+
+**三、生命周期**
+
+1.  React 的生命周期有哪些？
+    
+2.  React 废弃了哪些生命周期？为什么？
+    
+3.  React 16.X 中 props 改变后在哪个生命周期中处理
+    
+4.  React 性能优化在哪个生命周期？它优化的原理是什么？
+    
+5.  state 和 props 触发更新的生命周期分别有什么区别？
+    
+6.  React 中发起网络请求应该在哪个生命周期中进行？为什么？
+    
+7.  React 16 中新生命周期有哪些
+    
+
+**四、组件通信**
+
+1.  父子组件的通信方式？
+    
+2.  跨级组件的通信方式？
+    
+3.  非嵌套关系组件的通信方式？
+    
+4.  如何解决 props 层级过深的问题
+    
+5.  组件通信的方式有哪些
+    
+
+**五、路由**
+
+1.  React-Router 的实现原理是什么？
+    
+2.  如何配置 React-Router 实现路由切换
+    
+3.  React-Router 怎么设置重定向？
+    
+4.  react-router 里的 Link 标签和 a 标签的区别
+    
+5.  React-Router 如何获取 URL 的参数和历史对象？
+    
+6.  React-Router 4 怎样在路由变化时重新渲染同一个组件？
+    
+7.  React-Router 的路由有几种模式？
+    
+8.  React-Router 4 的 Switch 有什么用？
+    
+
+**六、Redux**
+
+1.  对 Redux 的理解，主要解决什么问题
+    
+2.  Redux 原理及工作流程
+    
+3.  Redux 中异步的请求怎么处理
+    
+4.  Redux 怎么实现属性传递，介绍下原理
+    
+5.  Redux 中间件是什么？接受几个参数？柯里化函数两端的参数具体是什么？
+    
+6.  Redux 请求中间件如何处理并发
+    
+7.  Redux 状态管理器和变量挂载到 window 中有什么区别
+    
+8.  mobox 和 redux 有什么区别？
+    
+9.  Redux 和 Vuex 有什么区别，它们的共同思想
+    
+10.  Redux 中间件是怎么拿到 store 和 action? 然后怎么处理?
+    
+11.  Redux 中的 connect 有什么作用
+    
+
+**七、Hooks**
+
+1.  对 React Hook 的理解，它的实现原理是什么
+    
+2.  为什么 useState 要使用数组而不是对象
+    
+3.  React Hooks 解决了哪些问题？
+    
+4.  React Hook 的使用限制有哪些？
+    
+5.  useEffect 与 useLayoutEffect 的区别
+    
+6.  React Hooks 在平时开发中需要注意的问题和原因
+    
+7.  React Hooks 和生命周期的关系？
+    
+
+**八、虚拟 DOM**
+
+1.  对虚拟 DOM 的理解？虚拟 DOM 主要做了什么？虚拟 DOM 本身是什么？
+    
+2.  React diff 算法的原理是什么？
+    
+3.  React key 是干嘛用的 为什么要加？key 主要是解决哪一类问题的
+    
+4.  虚拟 DOM 的引入与直接操作原生 DOM 相比，哪一个效率更高，为什么
+    
+5.  React 与 Vue 的 diff 算法有何不同？
+    
+
+**九、其他**
+
+1.  React 组件命名推荐的方式是哪个？
+    
+2.  react 最新版本解决了什么问题，增加了哪些东西
+    
+3.  react 实现一个全局的 dialog
+    
+4.  React 数据持久化有什么实践吗？
+    
+5.  对 React 和 Vue 的理解，它们的异同
+    
+6.  可以使用 TypeScript 写 React 应用吗？怎么操作？
+    
+7.  React 设计思路，它的理念是什么？
+    
+8.  React 中 props.children 和 React.Children 的区别
+    
+9.  React 的状态提升是什么？使用场景有哪些？
+    
+10.  React 中 constructor 和 getInitialState 的区别?
+    
+11.  React 的严格模式如何使用，有什么用处？
+    
+12.  在 React 中遍历的方法有哪些？
+    
+13.  在 React 中页面重新加载时怎样保留数据？
+    
+14.  同时引用这三个库 react.js、react-dom.js 和 babel.js 它们都有什么作用？
+    
+15.  React 必须使用 JSX 吗？
+    
+16.  为什么使用 jsx 的组件中没有看到使用 react 却需要引入 react？
+    
+17.  在 React 中怎么使用 async/await？
+    
+18.  React.Children.map 和 js 的 map 有什么区别？
+    
+19.  对 React SSR 的理解
+    
+20.  为什么 React 要用 JSX？
+    
+21.  HOC 相比 mixins 有什么优点？
+    
+22.  React 中的高阶组件运用了什么设计模式？
+    
+
+#### （2）思维导图
+
+下图对 React 面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaalgNHdvmVX5iaz8p66tmA7pl43WdzPL7NWgRtIia9xlDhOg0W9SQAIKA/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**
+
+*   「2021」高频前端面试题汇总之 React 篇（上）[8]
+    
+*   「2021」高频前端面试题汇总之 React 篇（下）[9]
+    
+
+### 6. 浏览器原理
+
+#### （1）面试题目
+
+**一、浏览器安全**
+
+1.  什么是 XSS 攻击？
+    
+2.  如何防御 XSS 攻击？
+    
+3.  什么是 CSRF 攻击？
+    
+4.  如何防御 CSRF 攻击？
+    
+5.  什么是中间人攻击？如何防范中间人攻击？
+    
+6.  有哪些可能引起前端安全的问题?
+    
+7.  网络劫持有哪几种，如何防范？
+    
+
+**二、进程与线程**
+
+1.  进程与线程的概念
+    
+2.  进程和线程的区别
+    
+3.  浏览器渲染进程的线程有哪些
+    
+4.  进程之前的通信方式
+    
+5.  僵尸进程和孤儿进程是什么？
+    
+6.  死锁产生的原因？如果解决死锁的问题？
+    
+7.  如何实现浏览器内多个标签页之间的通信?
+    
+8.  对 Service Worker 的理解
+    
+
+三、浏览器缓存
+
+1.  对浏览器的缓存机制的理解
+    
+2.  浏览器资源缓存的位置有哪些？
+    
+3.  协商缓存和强缓存的区别
+    
+4.  为什么需要浏览器缓存？
+    
+5.  点击刷新按钮或者按 F5、按 Ctrl+F5 （强制刷新）、地址栏回车有什么区别？
+    
+
+**四、浏览器组成**
+
+1.  对浏览器的理解
+    
+2.  对浏览器内核的理解
+    
+3.  常见的浏览器内核比较
+    
+4.  常见浏览器所用内核
+    
+5.  浏览器的主要组成部分
+    
+6.  五、浏览器渲染原理
+    
+7.  浏览器的渲染过程
+    
+8.  浏览器渲染优化
+    
+9.  渲染过程中遇到 JS 文件如何处理？
+    
+10.  什么是文档的预解析？
+    
+11.  CSS 如何阻塞文档解析？
+    
+12.  如何优化关键渲染路径？
+    
+13.  什么情况会阻塞渲染？
+    
+
+**六、浏览器本地存储**
+
+1.  浏览器本地存储方式及使用场景
+    
+2.  Cookie 有哪些字段，作用分别是什么
+    
+3.  Cookie、LocalStorage、SessionStorage 区别
+    
+4.  前端储存的⽅式有哪些？
+    
+5.  IndexedDB 有哪些特点？
+    
+
+**七、浏览器同源策略**
+
+1.  什么是同源策略
+    
+2.  如何解决跨越问题
+    
+3.  正向代理和反向代理的区别
+    
+4.  Nginx 的概念及其工作原理
+    
+
+**八、浏览器事件机制**
+
+1.  事件是什么？事件模型？
+    
+2.  如何阻止事件冒泡
+    
+3.  对事件委托的理解
+    
+4.  事件委托的使用场景
+    
+5.  同步和异步的区别
+    
+6.  对事件循环的理解
+    
+7.  宏任务和微任务分别有哪些
+    
+8.  什么是执行栈
+    
+9.  Node 中的 Event Loop 和浏览器中的有什么区别？process.nextTick 执行顺序？
+    
+10.  事件触发的过程是怎样的
+    
+
+**九、浏览器垃圾回收机制**
+
+1.  V8 的垃圾回收机制是怎样的
+    
+2.  哪些操作会造成内存泄漏？
+    
+
+#### （2）思维导图
+
+下图对浏览器原理面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaqD4WbiaxsxxX75ZyrIDXiblKIan88FaDVbHYdQfbpAodENsTvQGs9NXA/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**「2021」高频前端面试题汇总之浏览器原理篇 [10]。
+
+### 7. 计算机网络
+
+#### （1）面试题目
+
+**一、HTTP 协议**
+
+1.  GET 和 POST 的请求的区别
+    
+2.  POST 和 PUT 请求的区别
+    
+3.  常见的 HTTP 请求头和响应头
+    
+4.  HTTP 状态码 304 是多好还是少好
+    
+5.  常见的 HTTP 请求方法
+    
+6.  OPTIONS 请求方法及使用场景
+    
+7.  HTTP 1.0 和 HTTP 1.1 之间有哪些区别？
+    
+8.  HTTP 1.1 和 HTTP 2.0 的区别
+    
+9.  HTTP 和 HTTPS 协议的区别
+    
+10.  GET 方法 URL 长度限制的原因
+    
+11.  当在浏览器中输入 Google.com 并且按下回车之后发生了什么？
+    
+12.  对 keep-alive 的理解
+    
+13.  页面有多张图片，HTTP 是怎样的加载表现？
+    
+14.  HTTP2 的头部压缩算法是怎样的？
+    
+15.  HTTP 请求报文的是什么样的？
+    
+16.  HTTP 响应报文的是什么样的？
+    
+17.  HTTP 协议的优点和缺点
+    
+18.  说一下 HTTP 3.0
+    
+19.  HTTP 协议的性能怎么样
+    
+20.  URL 有哪些组成部分
+    
+21.  与缓存相关的 HTTP 请求头有哪些
+    
+
+**二、HTTPS 协议**
+
+1.  什么是 HTTPS 协议？
+    
+2.  TLS/SSL 的工作原理
+    
+3.  数字证书是什么？
+    
+4.  HTTPS 通信（握手）过程
+    
+5.  HTTPS 的特点
+    
+6.  HTTPS 是如何保证安全的？
+    
+
+**三、HTTP 状态码**
+
+1.  常见的状态码
+    
+2.  同样是重定向，307，303，302 的区别？
+    
+
+**四、DNS 协议介绍**
+
+1.  DNS 协议是什么
+    
+2.  DNS 同时使用 TCP 和 UDP 协议？
+    
+3.  DNS 完整的查询过程
+    
+4.  迭代查询与递归查询
+    
+5.  DNS 记录和报文
+    
+
+**五、网络模型**
+
+1.  OSI 七层模型
+    
+2.  TCP/IP 五层协议
+    
+
+**六、TCP 与 UDP**
+
+1.  TCP 和 UDP 的概念及特点
+    
+2.  TCP 和 UDP 的区别
+    
+3.  TCP 和 UDP 的使用场景
+    
+4.  UDP 协议为什么不可靠？
+    
+5.  TCP 的重传机制
+    
+6.  TCP 的拥塞控制机制
+    
+7.  TCP 的流量控制机制
+    
+8.  TCP 的可靠传输机制
+    
+9.  TCP 的三次握手和四次挥手
+    
+10.  TCP 粘包是怎么回事，如何处理?
+    
+11.  为什么 udp 不会粘包？
+    
+
+**七、WebSocket**
+
+1.  对 WebSocket 的理解
+    
+2.  即时通讯的实现：短轮询、长轮询、SSE 和 WebSocket 间的区别？
+    
+
+#### （2）思维导图
+
+下图对计算机网络面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAahIpthXeeZZicv0jYZ0Ba0lbglumCIYNLynsJ4v5zEZic7oGR25eJDP8w/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**「2021」高频前端面试题汇总之计算机网络篇 [11]。
+
+### 8. 前端性能优化
+
+#### （1）面试题目
+
+**一、CDN**
+
+1.  CDN 的概念
+    
+2.  CDN 的作用
+    
+3.  CDN 的原理
+    
+4.  CDN 的使用场景
+    
+
+**二、懒加载**
+
+1.  懒加载的概念
+    
+2.  懒加载的特点
+    
+3.  懒加载的实现原理
+    
+4.  懒加载与预加载的区别
+    
+
+**三、回流与重绘**
+
+1.  回流与重绘的概念及触发条件
+    
+2.  如何避免回流与重绘？
+    
+3.  如何优化动画？
+    
+4.  documentFragment 是什么？用它跟直接操作 DOM 的区别是什么？
+    
+
+**四、节流与防抖**
+
+1.  对节流与防抖的理解
+    
+2.  实现节流函数和防抖函数
+    
+
+**五、图片优化**
+
+1.  如何对项目中的图片进行优化？
+    
+2.  常见的图片格式及使用场景
+    
+
+**六、Webpack 优化**
+
+1.  如何提⾼ webpack 的打包速度?
+    
+2.  如何减少 Webpack 打包体积
+    
+3.  如何⽤ webpack 来优化前端性能？
+    
+4.  如何提⾼ webpack 的构建速度？
+    
+
+#### （2）思维导图
+
+下图对前端性能优化面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAadbcVH0HskYCsj50YXNpU9Re0ySuO8PFvPWRP4T588ctY60iauUZo29g/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**「2021」高频前端面试题汇总之性能优化篇 [12]。
+
+### 9. 手写代码
+
+#### （1）面试题目
+
+**一、JavaScript 基础**
+
+1.  手写 Object.create
+    
+2.  手写 instanceof 方法
+    
+3.  手写 new 操作符
+    
+4.  手写 Promise
+    
+5.  手写 Promise.then
+    
+6.  手写 Promise.all
+    
+7.  手写 Promise.race
+    
+8.  手写防抖函数
+    
+9.  手写节流函数
+    
+10.  手写类型判断函数
+    
+11.  手写 call 函数
+    
+12.  手写 apply 函数
+    
+13.  手写 bind 函数
+    
+14.  函数柯里化的实现
+    
+15.  实现 AJAX 请求
+    
+16.  使用 Promise 封装 AJAX 请求
+    
+17.  实现浅拷贝
+    
+18.  实现深拷贝
+    
+
+**二、数据处理**
+
+1.  实现日期格式化函数
+    
+2.  交换 a,b 的值，不能用临时变量
+    
+3.  实现数组的乱序输出
+    
+4.  实现数组元素求和
+    
+5.  实现数组的扁平化
+    
+6.  实现数组去重
+    
+7.  实现数组的 flat 方法
+    
+8.  实现数组的 push 方法
+    
+9.  实现数组的 filter 方法
+    
+10.  实现数组的 map 方法
+    
+11.  实现字符串的 repeat 方法
+    
+12.  实现字符串翻转
+    
+13.  将数字每千分位用逗号隔开
+    
+14.  实现非负大整数相加
+    
+15.  实现 add(1)(2)(3)
+    
+16.  实现类数组转化为数组
+    
+17.  使用 reduce 求和
+    
+18.  将 js 对象转化为树形结构
+    
+19.  使用 ES5 和 ES6 求函数参数的和
+    
+20.  解析 URL Params 为对象
+    
+
+**三、场景应用**
+
+1.  循环打印红黄绿
+    
+2.  实现每隔一秒打印 1,2,3,4
+    
+3.  小孩报数问题
+    
+4.  用 Promise 实现图片的异步加载
+    
+5.  实现发布 - 订阅模式
+    
+6.  查找文章中出现频率最高的单词
+    
+7.  封装异步的 fetch，使用 async await 方式来使用
+    
+8.  实现 prototype 继承
+    
+9.  实现双向数据绑定
+    
+10.  实现简单路由
+    
+11.  实现斐波那契数列
+    
+12.  字符串出现的不重复最长长度
+    
+13.  使用 setTimeout 实现 setInterval
+    
+14.  实现 jsonp
+    
+15.  判断对象是否存在循环引用
+    
+
+#### （2）思维导图
+
+下图对手写代码面试题的考察频率进行了大致的区分，可以选择性的学习：![](https://mmbiz.qpic.cn/sz_mmbiz/H8M5QJDxMHpfRmm3yVJhzLSWk9JicrKAaVCLYpKrKvu1dLxYDltRPygUWakGVBgw0ojThqkGJJOJpUoFHibjoOjg/640?wx_fmt=other)
+
+#### （3）答案解析
+
+**既然有面试题，那面试题答案也是必不可少的，参考文章：**「2021」高频前端面试题汇总之手写代码篇 [13]。
+
+### 10. 代码输出结果
+
+**代码输出结果**是面试中常考的题目，一段代码中可能涉及到很多的知识点，这就考察到了应聘者的基础能力。在前端面试中，常考的代码输出问题主要涉及到以下知识点：**异步编程、事件循环、this 指向、作用域、变量提升、闭包、原型、继承**等，这里就不一一列举相关的面试题了，已经在另外一篇文章写的很清楚了，参考文章：「2021」高频前端面试题汇总之代码输出结果篇 [14]。
+
+如果这一篇文章中的面试题都能搞懂了，那面试中的代码输出结果问题基本都很容易就解决了。
+
+### 11. 前端工程化
+
+#### （1）面试题目
+
+**一、Git**
+
+1.  git 和 svn 的区别
+    
+2.  经常使用的 git 命令？
+    
+3.  git pull 和 git fetch 的区别
+    
+4.  git rebase 和 git merge 的区别
+    
+
+**二、Webpack**
+
+1.  webpack 与 grunt、gulp 的不同？
+    
+2.  webpack、rollup、parcel 优劣？
+    
+3.  有哪些常⻅的 Loader？
+    
+4.  有哪些常⻅的 Plugin？
+    
+5.  bundle，chunk，module 是什么？
+    
+6.  Loader 和 Plugin 的不同？
+    
+7.  webpack 的构建流程?
+    
+8.  编写 loader 或 plugin 的思路？
+    
+9.  webpack 的热更新是如何做到的？说明其原理？
+    
+10.  如何⽤ webpack 来优化前端性能？
+    
+11.  如何提⾼ webpack 的打包速度?
+    
+12.  如何提⾼ webpack 的构建速度？
+    
+13.  怎么配置单⻚应⽤？怎么配置多⻚应⽤？
+    
+
+**三、其他**
+
+1.  Babel 的原理是什么?
+    
+
+**注：** 关于前端工程相关的面试题，由于个人还在整理中，还不是很全面，会尽快发在掘金上，暂时就不给出答案了，大家可以自行查找学习。
+
+### 12. 其他
+
+除了上面给出的这些类别的面试题，其实还有很多，比如数据结构与算法，前端业务实现等。关于数据结构与算法，主要考察方向就是 LeetCode 题目，可以参考**一个搬砖的胖子**大佬的 codeTop[15] 来针对性的刷题。下面只给出几个业务实现的问题，大家可以参考：
+
+1.  如何优化长列表
+    
+2.  如何实现一个 dialog 组件
+    
+3.  服务端渲染的原理
+    
+4.  项目打包到服务器的整个过程
+    
+5.  以前端角度出发做好 SEO 需要考虑什么？
+    
+6.  如何实现前端登录
+    
+7.  如何实现扫码登录
+    
+
+**最后，这篇文章只给出了前端面试中经常考察到的 “八股文”，基本没有涉及到项目经历相关的问题， 只能根据自己的实际情况去作答了。整理不易，本文所附链接中的面试题文章的总字数已经超过了 30w 字，如果觉得有用就点个赞吧！**
+
+关于本文  
+
+作者：CUGGZ
+========
+
+https://juejin.cn/post/6996841019094335519
+
+The End
+
+如果你觉得这篇内容对你挺有启发，我想请你帮我三个小忙：
+
+1、点个 **「在看」**，让更多的人也能看到这篇内容
+
+2、关注官网 **https://muyiy.cn**，让我们成为长期关系
+
+3、关注公众号「高级前端进阶」，公众号后台回复 **「加群」** ，加入我们一起学习并送你精心整理的高级前端面试题。
+
+》》面试官都在用的题库，快来看看《《  
+
+```
+“在看”吗？在看就点一下吧
+```
