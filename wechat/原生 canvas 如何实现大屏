@@ -1,0 +1,402 @@
+> 本文由 [简悦 SimpRead](http://ksria.com/simpread/) 转码， 原文地址 [mp.weixin.qq.com](https://mp.weixin.qq.com/s/otmUNM9ovq7LdqKZD4_8Sw)
+
+```
+大厂技术  高级前端  Node进阶
+
+
+点击上方 程序员成长指北，关注公众号
+
+回复1，加入高级Node交流群
+
+```
+
+前言
+--
+
+可视化大屏该如何做？有可能一天完成吗？废话不多说，直接看效果，线上 Demo 地址 lxfu1.github.io/large-scree…。
+
+![](https://mmbiz.qpic.cn/mmbiz_png/pqcWLvSo2kg2E2sWkABqe4ibqic8vaHJOAxxRGV2VMwObvhxkhX7HSCNRK3PMJcyhp5E6dria1dDnTVZNdFK8zMOA/640?wx_fmt=png)
+
+看完这篇文章（这个项目），你将收获：
+
+1.  全局状态真的很简单，你只需 5 分钟就能上手
+    
+2.  如何缓存函数，当入参不变时，直接使用缓存值
+    
+3.  千万节点的图如何分片渲染，不卡顿页面操作
+    
+4.  项目单测该如何写？
+    
+5.  如何用 canvas 绘制各种图表，如何实现 canvas 动画
+    
+6.  如何自动化部署自己的大屏网站
+    
+
+实现
+--
+
+项目基于 Create React App `--template typescript`搭建，包管理工具使用的 pnpm ，pnpm 的优势这里不多介绍 (快 + 节省磁盘空间)，之前在其它平台写过相关文章，后续可能会搬过来。由于项目 package.json 里面有限制包版本（最新版本的 G6 会导致 OOM，官方短时间能应该会修复），如果使用的 yarn 或 npm 的话，改为对应的 resolutions 即可。
+
+```
+"pnpm": {
+    "overrides": {
+      "@antv/g6": "4.7.10"
+    }
+  }
+
+
+```
+
+```
+"resolutions": {
+  "@antv/g6": "4.7.10"
+},
+
+
+```
+
+### 启动
+
+1.  clone 项目
+    
+
+```
+git clone https://github.com/lxfu1/large-screen-visualization.git
+
+
+```
+
+2.  pnpm 安装 `npm install -g pnpm`
+    
+3.  启动：`pnpm start` 即可，建议配置 alias ，可以简化各种命令的简写 eg:`p start`，不出意外的话，你可以通过 http://localhost:3000/ 访问了
+    
+4.  测试：`p test`
+    
+5.  构建：`p build`
+    
+
+**强烈建议大家先 clone 项目！**
+
+### 分析
+
+#### 全局状态
+
+全局状态用的 valtio ，位于项目 `src/models`目录下，强烈推荐。
+
+**优点**：数据与视图分离的心智模型，不再需要在 React 组件或 hooks 里用 useState 和 useReducer 定义数据，或者在 useEffect 里发送初始化请求，或者考虑用 context 还是 props 传递数据。
+
+**缺点**：兼容性，基于 proxy 开发，对低版本浏览器不友好，当然，大屏应该也不会考虑 IE 这类浏览器。
+
+```
+import { proxy } from"valtio";
+import { NodeConfig } from"@ant-design/graphs";
+
+typeIState = {
+  sliderWidth: number;
+  sliderHeight: number;
+  selected: NodeConfig | null;
+};
+
+exportconststate: IState = proxy({
+  sliderWidth: 0,
+  sliderHeight: 0,
+  selected: null,
+});
+
+
+```
+
+状态更新：
+
+```
+import { state } from "src/models";
+
+state.selected = e.item?.getModel() as NodeConfig;
+
+
+```
+
+状态消费：
+
+```
+import { useSnapshot } from"valtio";
+import { state } from"src/models";
+
+exportconstBarComponent = () => {
+  const snap = useSnapshot(state);
+
+  console.log(snap.selected)
+}
+
+
+```
+
+当我们选中图谱节点的时候，由于 BarComponent 组件监听了 selected 状态，所以该组件会进行更新。有没有感觉非常简单？一些高级用法建议大家去官网查看，不再展开。
+
+#### 函数缓存
+
+为什么需要函数缓存？当然，在这个项目中函数缓存比较鸡肋，为了用而用，试想，如果有一个函数计算量非常大，组件内又有多个 state 频繁更新，怎么确保函数不被重复调用呢？可能大家会想到 `useMemo``useCallback`等手段，这里要介绍的是 React 官方的 cache 方法，已经在 React 内部使用，但未暴露。实现上借鉴（抄袭）ReactCache，**通过缓存的函数 fn 及其参数列表来构建一个 cacheNode 链表，然后基于链表最后一项的状态来作为函数 fn 与该组参数的计算缓存结果。**
+
+代码位于 `src/utils/cache`
+
+```
+interface CacheNode {
+  /**
+   * 节点状态
+   *  - 0：未执行
+   *  - 1：已执行
+   *  - 2：出错
+   */
+  s: 0 | 1 | 2;
+  // 缓存值
+  v: unknown;
+  // 特殊类型（object,fn），使用 weakMap 存储，避免内存泄露
+  o: WeakMap<Function | object, CacheNode> | null;
+  // 基本类型
+  p: Map<Function | object, CacheNode> | null;
+}
+
+const cacheContainer = new WeakMap<Function, CacheNode>();
+
+export const cache = (fn: Function): Function => {
+  const UNTERMINATED = 0;
+  const TERMINATED = 1;
+  const ERRORED = 2;
+
+  const createCacheNode = (): CacheNode => {
+    return {
+      s: UNTERMINATED,
+      v: undefined,
+      o: null,
+      p: null,
+    };
+  };
+
+  return function () {
+    let cacheNode = cacheContainer.get(fn);
+    if (!cacheNode) {
+      cacheNode = createCacheNode();
+      cacheContainer.set(fn, cacheNode);
+    }
+    for (let i = 0; i < arguments.length; i++) {
+      const arg = arguments[i];
+      // 使用 weakMap 存储，避免内存泄露
+      if (
+        typeof arg === "function" ||
+        (typeof arg === "object" && arg !== null)
+      ) {
+        let objectCache: CacheNode["o"] = cacheNode.o;
+        if (objectCache === null) {
+          objectCache = cacheNode.o = new WeakMap();
+        }
+        let objectNode = objectCache.get(arg);
+        if (objectNode === undefined) {
+          cacheNode = createCacheNode();
+          objectCache.set(arg, cacheNode);
+        } else {
+          cacheNode = objectNode;
+        }
+      } else {
+        let primitiveCache: CacheNode["p"] = cacheNode.p;
+        if (primitiveCache === null) {
+          primitiveCache = cacheNode.p = new Map();
+        }
+        let primitiveNode = primitiveCache.get(arg);
+        if (primitiveNode === undefined) {
+          cacheNode = createCacheNode();
+          primitiveCache.set(arg, cacheNode);
+        } else {
+          cacheNode = primitiveNode;
+        }
+      }
+    }
+    if (cacheNode.s === TERMINATED) return cacheNode.v;
+    if (cacheNode.s === ERRORED) {
+      throw cacheNode.v;
+    }
+    try {
+      const res = fn.apply(null, arguments as any);
+      cacheNode.v = res;
+      cacheNode.s = TERMINATED;
+      return res;
+    } catch (err) {
+      cacheNode.v = err;
+      cacheNode.s = ERRORED;
+      throw err;
+    }
+  };
+};
+
+
+```
+
+如何验证呢？我们可以简单看下单测，位于`src/__tests__/utils/cache.test.ts`：
+
+```
+import { cache } from "src/utils";
+
+describe("cache", () => {
+  const primitivefn = jest.fn((a, b, c) => {
+    return a + b + c;
+  });
+
+  it("primitive", () => {
+    const cacheFn = cache(primitivefn);
+    const res1 = cacheFn(1, 2, 3);
+    const res2 = cacheFn(1, 2, 3);
+    expect(res1).toBe(res2);
+    expect(primitivefn).toBeCalledTimes(1);
+  });
+});
+
+
+```
+
+可以看出，即使我们调用了 2 次 cacheFn，由于入参不变，fn 只被执行了一次，第二次直接返回了第一次的结果。
+
+项目里面在做 circle 动画的时候使用了，因为该动画是绕圆周无限循环的，当循环过一周之后，后的动画和之前的完全一致，没必要再次计算对应的 circle 坐标，所以我们使用了 cache ，位于 src/components/background/index.tsx。
+
+```
+  const cacheGetPoint = cache(getPoint);
+  let p = 0;
+  const animate = () => {
+    if (p >= 1) p = 0;
+    const { x, y } = cacheGetPoint(p);
+    ctx.clearRect(0, 0, 2 * clearR, 2 * clearR);
+    createCircle(aCtx, x, y, circleR, "#fff", 6);
+    p += 0.001;
+    requestAnimationFrame(animate);
+  };
+  animate();
+
+
+```
+
+#### 分片渲染
+
+你有审查元素吗？项目背景图是通过 canvas 绘制的，并不是背景图片！通过 canvas 绘制如此多的小圆点，会不会阻碍页面操作呢？当数据量足够大的时候，是会阻碍的，大家可以把 NodeMargin 设置为 0.1 ，同时把 schduler 调用去掉，直接改为同步绘制。当节点数量在 500 W 的时候，如果没有开启切片，页面白屏时间在 MacBook Pro M1 上白屏时间大概是 8.5 S；开启分片渲染时页面不会出现白屏，而是从左到右逐步绘制背景图，每个任务的执行时间在 16S 左右波动。
+
+![](https://mmbiz.qpic.cn/mmbiz/pqcWLvSo2kg2E2sWkABqe4ibqic8vaHJOANvfSxbNicbdVjOEKLBssn4JWZ7XcNG54ibyq3lff7cOrgruaalqicibI6g/640?wx_fmt=jpeg)
+
+```
+  const schduler = (tasks: Function[]) => {
+    const DEFAULT_RUNTIME = 16;
+    const { port1, port2 } = new MessageChannel();
+    let isAbort = false;
+
+    const promise: Promise<any> = new Promise((resolve, reject) => {
+      const runner = () => {
+        const preTime = performance.now();
+        if (isAbort) {
+          return reject();
+        }
+        do {
+          if (tasks.length === 0) {
+            return resolve([]);
+          }
+          const task = tasks.shift();
+          task?.();
+        } while (performance.now() - preTime < DEFAULT_RUNTIME);
+        port2.postMessage("");
+      };
+      port1.onmessage = () => {
+        runner();
+      };
+    });
+    // @ts-ignore
+    promise.abort = () => {
+      isAbort = true;
+    };
+    port2.postMessage("");
+    return promise;
+  };
+
+
+```
+
+**分片渲染可以不阻碍用户操作，但延迟了任务的整体时长，是否开启还是取决于数据量。如果每个分片实际执行时间大于 16ms 也会造成阻塞，并且会堆积，并且任务执行的时候没有等，最终渲染状态和预期不一致，所以 task 的拆分也很重要。**
+
+#### 单测
+
+这里不想多说，大家可以运行 `pnpm test`看看效果，环境已经搭建好；由于项目里面用到了 canvas 所以需要 mock 一些环境，这里的 mock 可以理解为 “我们前端代码跑在浏览器里运行，依赖了浏览器环境以及对应的 API，但由于单测没有跑在浏览器里面，所以需要 mock 浏览器环境”，例如项目里面设置的 jsdom、jest-canvas-mock 以及 worker 等，更多推荐直接访问 jest 官网。
+
+```
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+import"@testing-library/jest-dom";
+
+Object.defineProperty(URL, "createObjectURL", {
+  writable: true,
+  value: jest.fn(),
+});
+
+classWorker {
+  onmessage: () =>void;
+  url: string;
+  constructor(stringUrl) {
+    this.url = stringUrl;
+    this.onmessage = () => {};
+  }
+
+  postMessage() {
+    this.onmessage();
+  }
+  terminate() {}
+  onmessageerror() {}
+  addEventListener() {}
+  removeEventListener() {}
+  dispatchEvent(): boolean {
+    returntrue;
+  }
+  onerror() {}
+}
+window.Worker = Worker;
+
+
+```
+
+#### 自动化部署
+
+开发过项目的同学都知道，前端编写的代码最终是要进行部署的，目前比较流行的是前后端分离，前端独立部署，通过 proxy 的方式请求后端服务；或者是将前端构建产物推到后端服务上，和后端一起部署。如何做自动化部署呢，对于一些不依赖后端的项目来说，我们可以借助 github 提供的 gh-pages 服务来做自动化部署，CI、CD 仅需配置对应的 actions 即可，在仓库 settings/pages 下面选择对应分支即可完成部署。
+
+![](https://mmbiz.qpic.cn/mmbiz/pqcWLvSo2kg2E2sWkABqe4ibqic8vaHJOAXUFmqnOIDNxr8ctkphmqV7kEO5Lus4vqcna6ictFiaJB9n9vDeFpUrXw/640?wx_fmt=jpeg)
+
+例如项目里面的`.github/workflows/gh-pages.yml`，表示当 master 分支有代码提交时，会执行对应的 jobs，并借助 `peaceiris/actions-gh-pages@v3`将构建产物同步到 gh-pages 分支。
+
+```
+name:githubpages
+
+on:
+  push:
+    branches:
+      -master# default branch
+      
+env:
+  CI:false
+  PUBLIC_URL:'/large-screen-visualization'
+
+jobs:
+  deploy:
+    runs-on:ubuntu-latest
+    steps:
+      -uses:actions/checkout@v3
+      -run:yarn
+      -run:yarnbuild
+      -name:Deploy
+        uses:peaceiris/actions-gh-pages@v3
+        with:
+          github_token:${{ secrets.GITHUB_TOKEN }}
+          publish_dir:./build
+
+```
+
+```
+Node 社群
+
+
+
+
+我组建了一个氛围特别好的 Node.js 社群，里面有很多 Node.js小伙伴，如果你对Node.js学习感兴趣的话（后续有计划也可以），我们可以一起进行Node.js相关的交流、学习、共建。下方加 考拉 好友回复「Node」即可。
+
+   “分享、点赞、在看” 支持一波👍
+
+```
