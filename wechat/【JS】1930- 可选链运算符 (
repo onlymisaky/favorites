@@ -1,0 +1,330 @@
+> 本文由 [简悦 SimpRead](http://ksria.com/simpread/) 转码， 原文地址 [mp.weixin.qq.com](https://mp.weixin.qq.com/s/EJhKi31C9BPxBdsbYkPZgw)
+
+前言
+--
+
+之前整理了最近做的产品里比较典型的代码规范问题，里面有一个关于`可选链运算符(?.)`的规范，当时只是提了一下，今天详细说下想法，欢迎大佬参与讨论。
+
+可选链运算符 (?.)，大家都很熟悉了，直接看个例子：
+
+```
+const result = obj?.a?.b?.c?.d
+
+
+```
+
+很简单例子，上面代码? 前面的属性如果是空值（null 或 undefined），则 result 值是 undefined，反之如果都不是空值，则会返回最后一个 d 属性值。
+
+本文不是讲解这种语法的用法，主要是想分析下日常开发中，这种语法 滥用、乱用 的问题。
+
+滥用、乱用
+-----
+
+最近在 code review 一个公司项目代码，发现代码里用到的`可选链运算符`，很多滥用，用的很无脑，经常遇到这种代码：
+
+```
+const userName = data?.items?.[0]?.user?.name
+
+
+```
+
+↑ 不管对象以及属性有没有可能是空值，无脑加上`?.`就完了。
+
+```
+// react class component
+const name = this.state?.name
+
+// react hooks
+const [items, setItems] = useState([])
+items?.map(...)
+setItems?.([]) // 真有这么写的
+
+
+```
+
+↑ React 框架下，this.state 值不可能是空值，初始化以及 set 的值都是数组，都无脑加上`?.`
+
+```
+const item1 = obj?.item1
+console.log(item1.name)
+
+
+```
+
+↑ 第一行代码说明 obj 或 item1 可能是空值，但第二行也明显说明不可能是空值，否则依然会抛错，第一行的`?.`也就没意义了。
+
+```
+if (obj?.item1?.item2) {
+    const item2 = obj?.item1?.item2
+    const name = obj?.item1?.item2?.name
+}
+
+
+```
+
+↑ if 里已经判断了非空了，内部就没必要判断非空了。
+
+问题、缺点
+-----
+
+如果不考虑 `?.` 使用的`必要性`，无脑滥用其实也没问题，不会影响功能，优点也很多：
+
+1.  不用考虑是不是非空，每个变量或属性后面加 `?.` 就完了。
+    
+2.  由于不用思考，开发效率高。
+    
+3.  不会有空引用错误，不会有页面点点就没反应或弹错问题。
+    
+
+但是问题和缺点也很明显，而且也会很严重。分两点分析下：
+
+1.  可读性、维护性：给代码维护人员带来了很多分析代码的干扰，代码可读性和维护性都很差。
+    
+2.  隐式过滤了异常：把异常给隐式过滤掉了，导致不能快速定位问题。
+    
+3.  编译后代码冗余。
+    
+4.  护眼：一串?. 看着难受，特别是以一个 code reviewer 角度看。
+    
+
+### 1. 可读性、维护性
+
+可读性和维护性其实是一回事，都是指不是源代码作者的开发维护人员，在捋这块代码逻辑、修改 bug 等情况时，处理问题的效率，代码写的好处理就快，写的烂就处理慢，很简单道理。
+
+```
+const onClick = () => {
+    const user = props.data?.items?.[0]?.user
+    if (user) {
+        // use user to do something
+    }
+}
+
+
+```
+
+  
+已这行代码为例，有个 bug 现象是点击按钮没反应，维护开发看到这块代码，就会想这一串链式属性里，是不是有可能有空值，所以导致了 user 是空值，没走进 if 里导致没反应。然后就继续分析上层组件 props 传输代码，看 data 值从哪儿传来的，看是不是哪块代码导致 data 或 items 空值了。。。
+
+其实呢？从外部传过来的这一串属性里不会有空值的情况，导致 bug 问题根本不在这儿。
+
+```
+const user = props.data.items[0].user
+
+
+```
+
+那把`?.`都去掉呢？维护开发追踪问题看到这行代码，data items 这些属性肯定不能是空值，不然 console 就抛错了，但是 bug 现象里并没有抛错，所以只需要检查 user 能不能是空值就行了，很容易就排除了很多情况。
+
+总结就是：给代码维护人员带来了很多分析代码的干扰，代码可读性和维护性都很差。
+
+### 2. 隐式过滤了异常
+
+```
+api.get(...).then(result => {
+    const id = result?.id
+    // use id to do something
+})
+
+
+```
+
+比如有个需求，从后台 api 获取数据时，需要把结果里 id 属性获取到，然后进行数据处理，从业务流程上看，这个 api 返回的 result 以及 id 必须有值，如果没值的话后续的流程就会走不通。
+
+然后后台逻辑由于写的有问题，导致个别情况返回的 result=null，但是由于前端这里加了`?.`，导致页面没有任何反应，js 不抛错，console 也没有 log，后续流程出错了，这时候如果想找原因就会很困难，对代码熟悉还行，如果不是自己写的就只能看代码捋逻辑，如果是生产环境压缩混淆了就更难排查了。
+
+```
+api.get(...).then(result => {
+    const id = result.id
+    // use id to do something
+})
+
+
+```
+
+  
+
+把`?.`去掉呢？如果 api 返回值有问题，这里会立即抛错，后面的流程也就不能进行下去了，无论开发还是生产环境都能在 console 里快速定位问题，即使是压缩混淆的也能从 error 看出一二，或者在一些前端监控程序里也能监听到。
+
+其实这种现象跟 try catch 里不加 throw 类似，把隐式异常错误完全给过滤掉了，比如下面例子：
+
+```
+// 这个try本意是处理api请求异常
+try {
+    const data = getSaveData() // 这段js逻辑也在try里，所以如果这个方法内部抛错了，页面上就没任何反应，很难追踪问题
+    const result = await api.post(url, data)
+    // result 逻辑处理
+} catch (e) {
+    // 好点的给弹个框，打个log，甚至有的啥都不处理
+}
+
+
+```
+
+  
+
+总结就是：把异常给隐式过滤掉了，导致不能快速定位问题。
+
+### 3. 编译后代码冗余
+
+如果代码是 ts，并且编译目标是 ES2016，编译后代码会很长。可以看下 www.typescriptlang.org/play 效果。
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/ic5A4V8PX4PnHM7tU1qVglhKN7mJdjDXB3jibXE3xMYJEmmR2YIcJofRCCUyT7Sicq56htaTKBq4NyIUSibyguNic7Q/640?wx_fmt=png)
+
+Babel 在个别 stage 下，编译效果一样。
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/ic5A4V8PX4PnHM7tU1qVglhKN7mJdjDXB5zkofKlxrKxKsPicS5sQcjQu1vazkmUtKmB08mUUNSfvSLzkdSRgP0w/640?wx_fmt=png)
+
+但并不是说一点都不用，意思是尽量减少滥用，这样使用的频率会少很多，这种编译代码沉余也会少不少。
+
+应该怎么用？
+------
+
+  
+
+说了这么多，`.?` 应该怎么用呢？意思是不用吗？当然不是不能用，这个特性对于开发肯定好处很多的，但是得合理用，不能滥用。
+
+*   避免盲目用，滥用，有个点儿就加问号，特别是在一个比较长的链式代码里每个属性后面都加。
+    
+*   只有可能是空值，而且业务逻辑中有空值的情况，就用；其它情况尽量不要用。
+    
+
+其实说白了就是：什么时候需要判断一个变量或属性非空，什么时候不需要。首先在使用的时候得想下，问号前面的变量或属性值，有没有可能是空值：
+
+1.  很明显不可能是空值，比如 React 类组件里的 `this.state` `this.props`，不要用；
+    
+2.  自己定义的变量或属性，而且没有赋值为空值情况，不要用；
+    
+3.  某些方法或者组件里，参数和属性不允许是空值，那方法和组件里就不需要判断非空。（对于比较 common 的，推荐写断言，或者判断空值情况 throw error）
+    
+4.  后台 api 请求结果里，要求 result 或其内部属性必须有值，那这些值就不需要判断非空。
+    
+5.  按正常流程走，某个数据不会有空值情况，如果是空值说明前面的流程出问题了，这种情况就不需要在逻辑里判断非空。
+    
+
+```
+const userName = data?.items?.[0]?.user?.name // 不要滥用，如果某个属性有可能是空值，则需要?.
+const userName = data.items[0].user?.name // 比如data.items数组肯定不是空数组
+
+
+```
+
+```
+const items2 = items1.filter(item => item.checked)
+if (items2?.length) { } // 不需要?.
+
+
+```
+
+```
+// react class component
+const name = this.state?.name // 不需要?.
+
+// react hooks
+const [items, setItems] = useState([])
+items?.map(...) // 如果setItems没有赋值空值情况，则不需要?.
+setItems?.([]) // 不需要?.
+
+
+```
+
+```
+const item1 = obj?.item1 // 不需要?.
+console.log(item1.name)
+
+
+```
+
+```
+const id = obj?.id // 下面代码已经说明不能是空值了，不需要?.
+const name = obj.name
+
+
+```
+
+```
+if (obj?.item1?.item2) {
+    const item2 = obj?.item1?.item2 // 不需要?.
+    const name = obj?.item1?.item2?.name // 不需要?.
+}
+
+
+```
+
+```
+const id = obj?.item?.id // 不需要?.
+api.get(id).then(...) // 这个api如果id是空值，则api会抛错
+
+
+```
+
+当然，写代码时还得多想一下属性是否可能是空值，会一定程度的影响开发效率，也一定有开发会觉得很烦，不理解，无脑写`?.`多容易啊，但是我从另外两个角度分析下：
+
+1.  我觉得一个合格的开发应该对自己的代码逻辑很熟悉，应该有责任知道哪些值可能是空值，哪些不可能是空值（并不是说所有，也有大部分了），否则就是对自己的代码了解很少，觉得代码能跑就行，代码质量自然就低。
+    
+2.  想想在这个新特性出来之前大家是怎么写的，会对每个变量和属性都加`if非空判断`或者用`逻辑与(&&)`吗？不会吧。
+    
+
+小结
+--
+
+本文以一个 code reviewer 角度，分析了 `可选链运算符(?.)` 特性的滥用情况，以及 “正确使用方式”，只是代表我本人的看法，欢迎大佬参与讨论，无条件接受任何反驳。
+
+滥用的缺点：
+
+1.  可读性、维护性：给代码维护人员带来了很多分析代码的干扰，代码可读性和维护性都很差。
+    
+2.  隐式过滤了异常：把异常给隐式过滤掉了，导致不能快速定位问题。
+    
+3.  编译后代码冗余。
+    
+4.  护眼：一串?. 看着难受，特别是以一个 code reviewer 角度看。
+    
+
+“正确用法”：
+
+1.  避免盲目用，滥用，有个点儿就加问号，特别是在一个比较长的链式代码里每个属性后面都加。
+    
+2.  只有可能是空值，而且业务逻辑中有空值的情况，就用；其它情况尽量不要用。
+    
+
+> 作者：Mark 大熊 https://juejin.cn/post/7280747572707999799
+
+  
+
+  
+
+往期回顾
+
+  
+
+#
+
+[如何使用 TypeScript 开发 React 函数式组件？](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458468369&idx=1&sn=710836a0f836c1591b4953ecf09bb9bb&chksm=b1c2603886b5e92ec64f82419d9fd8142060ee99fd48b8c3a8905ee6840f31e33d423c34c60b&scene=21#wechat_redirect)
+
+#
+
+[11 个需要避免的 React 错误用法](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458468180&idx=1&sn=63da1eb9e4d8ba00510bf344eb408e49&chksm=b1c21f7d86b5966b160bf65b193b62c46bc47bf0b3965ff909a34d19d3dc9f16c86598792501&scene=21#wechat_redirect)
+
+#
+
+[6 个 Vue3 开发必备的 VSCode 插件](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458467984&idx=1&sn=f9f71530f15124fe44cd22eff3170981&chksm=b1c21eb986b597af806837a37b87b1e8bc06b26b16af578deddd8bb503a768f78f5a7acdb909&scene=21#wechat_redirect)
+
+#
+
+[3 款非常实用的 Node.js 版本管理工具](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458467880&idx=1&sn=ca7e12574d88a6b36ccfd47d9ddc7a4f&chksm=b1c21e0186b5971758792950721938b4a4efbc3024b0b01965c25a4ea73ec838767783ade6ea&scene=21#wechat_redirect)
+
+#
+
+[6 个你必须明白 Vue3 的 ref 和 reactive 问题](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458467756&idx=1&sn=902e85685a50ba7cdc75e410e10b9718&chksm=b1c21d8586b5949326c8836132b20dc4294af449473b6db4592cbfd00788345534a07d77fa6d&scene=21#wechat_redirect)
+
+#
+
+[6 个意想不到的 JavaScript 问题](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458467612&idx=1&sn=44ea5238a6500f44a47ea316c634bcf6&chksm=b1c21d3586b594237333a306f00353fba450514076e54ac32df7485ae358d0cefb25a6c1f329&scene=21#wechat_redirect)
+
+#
+
+[试着换个角度理解低代码平台设计的本质](http://mp.weixin.qq.com/s?__biz=MjM5MDc4MzgxNA==&mid=2458467471&idx=2&sn=7990678e19544372ff43b5a84f491337&chksm=b1c21ca686b595b07b097c764f9304887282d737b4dd0a2634c47b25c8f223c785a6c8714382&scene=21#wechat_redirect)
+
+![](https://mmbiz.qpic.cn/mmbiz_gif/dy9CXeZLlCXukR16d8fyyeJ4icloLCW0cvbCvibfaBxbY22lN51mYaLeKictjOeobKmxCVfb3AwIZ3t6eKicIicTtow/640?wx_fmt=gif)
+
+回复 “**加群**”，一起学习进步
