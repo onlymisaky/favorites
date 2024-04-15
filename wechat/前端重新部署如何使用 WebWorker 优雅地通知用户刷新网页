@@ -1,0 +1,165 @@
+> 本文由 [简悦 SimpRead](http://ksria.com/simpread/) 转码， 原文地址 [mp.weixin.qq.com](https://mp.weixin.qq.com/s/XzmHiAMxOE5gcD28LKvc0w)
+
+> 作者：Zayn
+> 
+> 链接：https://juejin.cn/post/7329280514628534313
+
+周五晚上组里说前端有 bug，正在吃宵夜的我眉头一紧，立即打开了钉钉（手贱...），看了一下这不是前几天刚解决的吗，果然，使用刷新大法就解决，原因不过是用户一直停留在页面上，新的版本发布后，没有刷新拿不到新的资源。
+
+现在大部分的前端系统都是 SPA，用户在使用中对系统更新无感知，切换菜单等并不能获取最新资源，如果前端是覆盖性部署，切换菜单请求旧资源，这个旧资源已经被覆盖（hash 打包的文件），还会出现一直无响应的情况。
+
+那么，当前端部署更新后，提示一直停留在系统中的用户刷新系统很有必要。
+
+解决方案
+----
+
+1.  在 public 文件夹下加入 manifest.json 文件，记录版本信息
+    
+2.  前端打包的时候向 manifest.json 写入当前时间戳信息
+    
+3.  在入口 JS 引入检查更新的逻辑，有更新则提示更新
+    
+
+*   路由守卫 router.beforeResolve（Vue-Router 为例）, 检查更新，对比 manifest.json 文件的响应头 Etag 判断是否有更新
+    
+*   通过 Worker 轮询，检查更新，对比 manifest.json 文件的响应头 Etag 判断是否有更新。当然你如果不在乎这点点开销，可不使用 Worker 另开一个线程
+    
+
+### Public 下的加入 manifest.json 文件
+
+```
+{    "timestamp":1706518420707,  "msg":"更新内容如下：\n--1.添加系统更新提示机制"}
+```
+
+这里如果是不向用户提示更新内容，可不填，前段开发者也无需维护 manifest.json 的 msg 内容，这里主要考虑到如果用户在填长表单的时候，填了一大半，你这时候给用户弹个更新提示，用户无法判断是否影响当前表单填写提交，如果将更新信息展示出来，用户感知更新内容，可判断是否需要立即刷新，还是提交完表单再刷新。
+
+### webpack 向 manifest.json 写入当前时间戳信息
+
+```
+// 版本号文件    const filePath = path.resolve(`./public`, 'manifest.json')    // 读取文件内容    readFile(filePath, 'utf8', (err, data) => {      if (err) {        console.error('读取文件时出错:', err)        return      }      // 将文件内容转换JSON      const dataObj = JSON.parse(data)      dataObj.timestamp = new Date().getTime()      // 将修改后的内容写回文件      writeFile(filePath, JSON.stringify(dataObj), 'utf8', err => {        if (err) {          console.error('写入文件时出错:', err)          return        }      })    })
+```
+
+如果你无需维护更新内容的话，可直接写入 timestamp
+
+```
+// 生成版本号文件const filePath = path.resolve(`./public`, 'manifest.json')writeFileSync(filePath, `${JSON.stringify({ timestamp: new Date().getTime() })}`)
+```
+
+### 检查更新的逻辑
+
+入口文件 main.js 处引入
+
+我这里检查更新的文件是放在 utils/checkUpdate
+
+```
+// 检查版本更新import '@/utils/checkUpdate'
+```
+
+checkUpdate 文件内容如下
+
+```
+import router from '@/router'import { Modal } from 'ant-design-vue'if (process.env.NODE_ENV === 'production') {  let lastEtag = ''  let hasUpdate = false  let worker = null  async function checkUpdate() {    try {      // 检测前端资源是否有更新      let response = await fetch(`/manifest.json?v=${Date.now()}`, {        method: 'head'      })      // 获取最新的etag      let etag = response.headers.get('etag')      hasUpdate = lastEtag && etag !== lastEtag      lastEtag = etag    } catch (e) {      return Promise.reject(e)    }  }  async function confirmReload(msg = '', lastEtag) {    worker &&      worker.postMessage({        type: 'pause'      })    try {      Modal.confirm({        title: '温馨提示',        content: '系统后台有更新，请点击“立即刷新”刷新页面\n' + msg,        okText: '立即刷新',        cancelText: '5分钟后提示我',        onOk() {          worker.postMessage({            type: 'destroy'          })          location.reload()        },        onCancel() {          worker &&            worker.postMessage({              type: 'recheck',              lastEtag: lastEtag            })        }      })    } catch (e) {}  }  // 路由拦截  router.beforeResolve(async (to, from, next) => {    next()    try {      await checkUpdate()      if (hasUpdate) {        worker.postMessage({          type: 'destroy'        })        location.reload()      }    } catch (e) {}  })  // 利用worker轮询  worker = new Worker(    /* webpackChunkName: "checkUpdate.worker" */ new URL('../worker/checkUpdate.worker.js', import.meta.url)  )  worker.postMessage({    type: 'check'  })  worker.onmessage = ({ data }) => {    if (data.type === 'hasUpdate') {      hasUpdate = true      confirmReload(data.msg, data.lastEtag)    }  }}
+```
+
+这里因为缺换路由本来就要刷新页面，用户可无需感知系统更新信息，直接通过请求头的 Etag 即可，这里的 Fetch 方法就用 head 获取相应头就好了。
+
+checkUpdate.worker.js 文件如下
+
+```
+let lastEtaglet hasUpdate = falselet intervalId = ''async function checkUpdate() {  try {    // 检测前端资源是否有更新    let response = await fetch(`/manifest.json?v=${Date.now()}`, {      method: 'get'    })    // 获取最新的etag和data    let etag = response.headers.get('etag')    let data = await response.json()    hasUpdate = lastEtag !== undefined && etag !== lastEtag    if (hasUpdate) {      postMessage({        type: 'hasUpdate',        msg: data.msg,        lastEtag: lastEtag,        etag: etag      })    }    lastEtag = etag  } catch (e) {    return Promise.reject(e)  }}// 监听主线程发送过来的数据addEventListener('message', ({ data }) => {  if (data.type === 'check') {    // 每5分钟执行一次    // 立即执行一次，获取最新的etag，避免在setInterval等待中系统更新，第一次获取的etag是新的，但是lastEtag还是undefined，不满足条件，错失刷新时机    checkUpdate()    intervalId = setInterval(checkUpdate,5 * 60 * 1000)  }  if (data.type === 'recheck') {    // 每5分钟执行一次    hasUpdate = false    lastEtag = data.lastEtag    intervalId = setInterval(checkUpdate,  5 * 60 * 1000)  }  if (data.type === 'pause') {    clearInterval(intervalId)  }  if (data.type === 'destroy') {    clearInterval(intervalId)    close()  }})
+```
+
+如果不使用 worker 直接讲轮询逻辑放在 checkUpdate 即可
+
+### Worker 引入
+
+从 webpack 5 开始，你可以使用 Web Workers[1] 代替 `worker-loader`[2]。
+
+```
+new Worker(new URL('./worker.js', import.meta.url));
+```
+
+以下版本的就只能用 `worker-loader`[3] 咯
+
+也可以逻辑写成字符串，然后通过 ToURL 给 new Worker，如下：
+
+```
+function createWorker(f) {  const blob = new Blob(['(' + f.toString() +')()'], {type: "application/javascript"});  const blobUrl = window.URL.createObjectURL(blob);  const worker = new Worker(blobUrl);  return worker;}createWorker(function () {  self.addEventListener('message', function (event) {    // 消费信息      self.postMessage('send message')  }, false);})
+```
+
+#### worker 数据通信
+
+> ```
+> // 主线程
+> var uInt8Array = new Uint8Array(new ArrayBuffer(10));
+> for (var i = 0; i < uInt8Array.length; ++i) {
+>   uInt8Array[i] = i * 2; // [0, 2, 4, 6, 8,...]
+> }
+> worker.postMessage(uInt8Array);
+> // Worker 线程
+> self.onmessage = function (e) {
+>   var uInt8Array = e.data;
+>   postMessage('Inside worker.js: uInt8Array.toString() = ' + uInt8Array.toString());
+>   postMessage('Inside worker.js: uInt8Array.byteLength = ' + uInt8Array.byteLength);
+> };
+> ```
+> 
+> 但是，拷贝方式发送二进制数据，会造成性能问题。比如，主线程向 Worker 发送一个 500MB 文件，默认情况下浏览器会生成一个原文件的拷贝。为了解决这个问题，JavaScript 允许主线程把二进制数据直接转移给子线程，但是一旦转移，主线程就无法再使用这些二进制数据了，这是为了防止出现多个线程同时修改数据的麻烦局面。这种转移数据的方法，叫做 Transferable Objects[4]。这使得主线程可以快速把数据交给 Worker，对于影像处理、声音处理、3D 运算等就非常方便了，不会产生性能负担。
+> 
+> 如果要直接转移数据的控制权，就要使用下面的写法。
+> 
+> ```
+> // Transferable Objects 格式
+> worker.postMessage(arrayBuffer, [arrayBuffer]);
+> 
+> // 例子
+> var ab = new ArrayBuffer(1);
+> worker.postMessage(ab, [ab]);
+> ```
+> 
+> Web Worker 使用教程 - 阮一峰的网络日志 (ruanyifeng.com)[5]
+
+然而，并不是所有的对象都可以被转移。只有那些被设计为可转移的对象（用 [Transferable] IDL 扩展属性修饰），比如 ArrayBuffer、MessagePort，ImageBitmap，OffscreenCanvas，才能通过这种方式来传递。转移操作是不可逆的，一旦对象被转移，原始上下文中的引用将不再有效。转移对象可以显著减少复制数据所需的时间和内存。
+
+### 参考资料
+
+[1]
+
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers: https://link.juejin.cn?target=https%3A%2F%2Fdeveloper.mozilla.org%2Fen-US%2Fdocs%2FWeb%2FAPI%2FWeb_Workers_API%2FUsing_web_workers
+
+[2]
+
+https://github.com/webpack-contrib/worker-loader: https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2Fwebpack-contrib%2Fworker-loader
+
+[3]
+
+https://github.com/webpack-contrib/worker-loader: https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2Fwebpack-contrib%2Fworker-loader
+
+[4]
+
+http://www.w3.org/html/wg/drafts/html/master/infrastructure.html#transferable-objects: https://link.juejin.cn?target=http%3A%2F%2Fwww.w3.org%2Fhtml%2Fwg%2Fdrafts%2Fhtml%2Fmaster%2Finfrastructure.html%23transferable-objects
+
+[5]
+
+https://www.ruanyifeng.com/blog/2018/07/web-worker.html: https://link.juejin.cn?target=https%3A%2F%2Fwww.ruanyifeng.com%2Fblog%2F2018%2F07%2Fweb-worker.html
+
+### 最后
+
+  
+
+  
+
+如果你觉得这篇内容对你挺有启发，我想邀请你帮我个小忙：  
+
+1.  点个「**喜欢**」或「**在看**」，让更多的人也能看到这篇内容
+    
+2.  我组建了个氛围非常好的前端群，里面有很多前端小伙伴，欢迎加我微信「**sherlocked_93**」拉你加群，一起交流和学习
+    
+3.  关注公众号「**前端下午茶**」，持续为你推送精选好文，也可以加我为好友，随时聊骚。
+    
+
+![](https://mmbiz.qpic.cn/mmbiz_png/XP4dRIhZqqX9lfzPJgCDkCDPbpxuEjSajtTicNb1Zd6PsTLu9EOplqyafiaibib0VX8oTyDzBMlxnJJ2BZ9AVic1tIA/640?wx_fmt=png)
+
+![](https://mmbiz.qpic.cn/sz_mmbiz_png/2wV7LicL762ZUCR5WEela9H9fDfYic8BAp8ib4cmuicFgACoRwORYGwkBtgUVaILLOjXtlGBnicuM5246MgketktMCg/640?wx_fmt=png)
+
+点个喜欢支持我吧，在看就更好了
