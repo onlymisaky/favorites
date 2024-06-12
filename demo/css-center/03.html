@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高度已知: 定位 + calc</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    .parent {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    .child {
+      position: absolute;
+      width: 30vw;
+      height: 30vh;
+      position:absolute;
+      top: calc(50% - 15vh);
+      left: calc(50% - 15vw);
+      background-color: skyblue;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="parent">
+    <div class="child"></div>
+  </div>
+
+</body>
+
+</html>
