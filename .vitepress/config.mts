@@ -14,7 +14,9 @@ export default defineConfig({
   vite: {
     plugins: [
       vitepressBar({
-        excluded: ['README.md'],
+        filter(fileInfo) {
+          return fileInfo.name.toLowerCase() !== 'readme.md'
+        },
         complete(bar) {
           const classified = bar.nav.reduce((acc, cur) => {
             const { link, items: _items, ...others } = cur as DefaultTheme.NavItemWithLink
@@ -49,11 +51,17 @@ export default defineConfig({
       })
     ],
   },
-
+  lastUpdated: true,
   themeConfig: {
     search: {
       provider: 'local',
-
+    },
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'full',
+        timeStyle: 'medium'
+      }
     },
     // https://vitepress.dev/reference/default-theme-config
     socialLinks: [

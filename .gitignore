@@ -1,0 +1,6 @@
+node_modules
+.vitepress/*
+!.vitepress/config.mts
+!.vitepress/theme
+!.vitepress/theme/**
+package-lock.json
