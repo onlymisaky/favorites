@@ -80,7 +80,6 @@
 
 ![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjDLNHCiaude7ibeMKo6W5XytCIrMHkhOkPE2XiahCogmiaibNescEOmUI7aA/640?wx_fmt=png&from=appmsg)![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjNBoNibdGa1mq2tX2FIZVebic1LjNvTIIGJYoa8IdKrdicaue5dTkaQofg/640?wx_fmt=png&from=appmsg)![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjibD5IUNpq7VNGGeWjfVWsrp7V3WZJx5nODG1RxAYYTkws1fZ1vkk0rQ/640?wx_fmt=png&from=appmsg)![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzj2ZuBHWXXX6CpMsVcKsk8N28YyBWxCnyRkeD4kztc62819sV0wXlXHg/640?wx_fmt=png&from=appmsg)![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjTmkuiahE0JTHGKAb3ueftqsY7JhpjWic4pmGrHuNm0n2T9OgyJoF8GZw/640?wx_fmt=png&from=appmsg)
 
-<<<左右滑动见更多>>>
 
 然后，我们在项目初始化后，通过`npm/yarn`按照好对应的依赖，执行对应的命令就可以开始本地开发了。
 
@@ -489,7 +488,6 @@ use anyhow::Result;use clap::{  Parser,   Subcommand,   ValueEnum,  
 
 ![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjicPGL4PNUhfbo8HSbuIT4GOvlC3y3UuPn4hR0dk73ibhXjeBtdiaMMs9w/640?wx_fmt=png&from=appmsg)![](https://mmbiz.qpic.cn/mmbiz_png/rv5jxwmzMCVhXm5K52f69q8BuYuiaKHzjToB32TAjficpCt9g8dp6m9NNy9ZQ0FnTGdozA7iajoOyPCica56K9hXFA/640?wx_fmt=png&from=appmsg)
 
-<<<左右滑动见更多>>>
 
 *   `#[derive(Subcommand)]`:
     

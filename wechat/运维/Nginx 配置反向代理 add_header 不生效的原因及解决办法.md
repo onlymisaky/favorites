@@ -27,11 +27,11 @@ add_header Access-Control-Allow-Origin * always;
 
 ![](https://cdn.nowtime.cc/2021/04/30/1343951322.png)
 
-> Access to XMLHttpRequest at ‘[http://api.xxxxxxx.com/v1/userinfo](http://api.xxxxxxx.com/v1/userinfo) from origin ‘[http://localhost:8080](http://localhost:8080/)‘ has been blocked by CORS policy: Response to preflight request doesn’t pass access control check: The value of the ‘Access-Control-Allow-Origin’ header in the response must not be the wildcard ‘*’ when the request’s credentials mode is ‘include’. The credentials mode of requests initiated by the XMLHttpRequest is controlled by the withCredentials attribute.
+> Access to XMLHttpRequest at http://api.xxxxxxx.com/v1/userinfo from origin http://localhost:8080/ has been blocked by CORS policy: Response to preflight request doesn’t pass access control check: The value of the ‘Access-Control-Allow-Origin’ header in the response must not be the wildcard ‘*’ when the request’s credentials mode is ‘include’. The credentials mode of requests initiated by the XMLHttpRequest is controlled by the withCredentials attribute.
 > 
 > **机翻成中文：**
 > 
-> 通过 CORS 策略已阻止从来源 “[http://localhost:8080”](http://localhost:8080”) 访问 “[http://api.xxxxxxx.com/v1/userinfo”](http://api.xxxxxxx.com/v1/userinfo%E2%80%9D) 处的 XMLHttpRequest：对预检请求的响应未通过访问 控制检查：当请求的凭据模式为 “包括” 时，响应中 “访问控制允许 - 来源” 标头的值不得为通配符“ *”。 XMLHttpRequest 发起的请求的凭据模式由 withCredentials 属性控制。
+> 通过 CORS 策略已阻止从来源 http://localhost:8080 访问 http://api.xxxxxxx.com/v1/userinfo 处的 XMLHttpRequest：对预检请求的响应未通过访问 控制检查：当请求的凭据模式为 “包括” 时，响应中 “访问控制允许 - 来源” 标头的值不得为通配符“ *”。 XMLHttpRequest 发起的请求的凭据模式由 withCredentials 属性控制。
 > 
 > 相关链接：[https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials)
 
