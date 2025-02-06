@@ -38,7 +38,8 @@ jobs:
         run: npm run docs:build
 
       - name: 上传构建产物
-        uses: actions/upload-pages-artifact@v2
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./.vitepress/dist
 
@@ -52,4 +53,4 @@ jobs:
     steps:
       - name: 部署到GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3
+        uses: actions/deploy-pages@v4
