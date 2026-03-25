@@ -1,0 +1,1 @@
+export { createDocManagerRequestHandler } from "./router";

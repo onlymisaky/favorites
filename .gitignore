@@ -1,6 +1,4 @@
 node_modules
-.vitepress/*
-!.vitepress/config.mts
-!.vitepress/theme
-!.vitepress/theme/**
+.vitepress/cache
+.vitepress/config.**.mjs
 package-lock.json

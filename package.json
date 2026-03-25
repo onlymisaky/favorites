@@ -6,8 +6,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22.10.2",
     "@vue/compiler-sfc": "^3.5.13",
+    "element-plus": "^2.13.6",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.2",
     "vite-plugin-vitepress-bar": "^0.0.3",
     "vitepress": "^1.5.0"
   },
