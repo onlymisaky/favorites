@@ -18,6 +18,7 @@
   "scripts": {
     "docs:dev": "vitepress dev --host",
     "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:preview": "vitepress preview",
+    "docs:reclassify": "node scripts/reclassify-wechat-by-title.mjs"
   }
 }
