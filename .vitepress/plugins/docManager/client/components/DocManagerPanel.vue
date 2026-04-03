@@ -23,9 +23,7 @@ const isSummaryDialogOpen = ref(false);
 const categories = ref<string[]>([]);
 const categoriesLoaded = ref(false);
 const categoriesError = ref("");
-const selectedMode = ref<"existing" | "create">(existingMode);
 const selectedCategory = ref("");
-const newCategoryName = ref("");
 const feedbackMessage = ref("");
 const feedbackType = ref<"error" | "success" | "">("");
 const summarizeOnOpen = ref(true);
@@ -55,20 +53,6 @@ const currentFileName = computed(
 const availableCategories = computed(() =>
   categories.value.filter((category) => category !== currentCategory.value),
 );
-const newCategoryError = computed(() =>
-  validateCategoryName(newCategoryName.value, currentCategory.value),
-);
-const moveDisabled = computed(() => {
-  if (isSubmitting.value) {
-    return true;
-  }
-
-  if (selectedMode.value === existingMode) {
-    return !selectedCategory.value;
-  }
-
-  return Boolean(newCategoryError.value);
-});
 const feedbackAlertType = computed(() =>
   feedbackType.value === "error" ? "error" : "success",
 );
@@ -106,15 +90,6 @@ const { panelStyle, isDragging, handleDragStart } = useDraggablePanel(
   isSummaryDialogOpen,
 );
 
-watch(
-  availableCategories,
-  (nextCategories) => {
-    if (selectedMode.value === existingMode) {
-      selectedCategory.value = nextCategories[0] ?? "";
-    }
-  },
-  { immediate: true },
-);
 
 watch(isMoveDialogOpen, (open) => {
   if (!open) {
@@ -201,20 +176,12 @@ async function handleDelete() {
 }
 
 async function handleMove() {
-  if (moveDisabled.value) {
-    return;
-  }
-
-  const targetDirName =
-    selectedMode.value === existingMode
-      ? selectedCategory.value
-      : newCategoryName.value.trim();
 
   await submitMutation(
     "/move",
     {
       relativePath: relativePath.value,
-      targetDirName,
+      targetDirName: selectedCategory.value,
     },
     "文档已归类。",
   );
@@ -305,18 +272,6 @@ function clearPanelFeedback() {
   feedbackType.value = "";
 }
 
-function updateSelectedMode(value: "existing" | "create") {
-  selectedMode.value = value;
-}
-
-function updateSelectedCategory(value: string) {
-  selectedCategory.value = value;
-}
-
-function updateNewCategoryName(value: string) {
-  newCategoryName.value = value;
-}
-
 function updateSelectedSummaryModel(
   value: (typeof selectedSummaryModel)["value"],
 ) {
@@ -333,31 +288,7 @@ function updateSummaryPreviewContent(value: string) {
   summaryPreviewContent.value = value;
 }
 
-function validateCategoryName(value: string, currentDirName: string) {
-  const trimmedValue = value.trim();
 
-  if (!trimmedValue) {
-    return "请输入分类名。";
-  }
-
-  if (trimmedValue === "." || trimmedValue === "..") {
-    return "分类名不合法。";
-  }
-
-  if (/[\\/]/.test(trimmedValue)) {
-    return "仅支持一级分类。";
-  }
-
-  if (/[:*?"<>|]/.test(trimmedValue)) {
-    return "分类名包含不支持的字符。";
-  }
-
-  if (trimmedValue === currentDirName) {
-    return "当前文档已在该分类下。";
-  }
-
-  return "";
-}
 </script>
 
 <template>
@@ -442,21 +373,14 @@ function validateCategoryName(value: string, currentDirName: string) {
     </ElAlert>
 
     <DocManagerMoveDialog
+      v-model:category="selectedCategory"
       :open="isMoveDialogOpen"
       :current-category="currentCategory"
       :categories-error="categoriesError"
       :available-categories="availableCategories"
       :is-submitting="isSubmitting"
-      :selected-mode="selectedMode"
-      :selected-category="selectedCategory"
-      :new-category-name="newCategoryName"
-      :new-category-error="newCategoryError"
-      :move-disabled="moveDisabled"
       @close="isMoveDialogOpen = false"
       @confirm="handleMove"
-      @update:selected-mode="updateSelectedMode"
-      @update:selected-category="updateSelectedCategory"
-      @update:new-category-name="updateNewCategoryName"
     />
 
     <DocManagerSummaryDialog

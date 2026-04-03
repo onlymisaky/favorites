@@ -7,35 +7,57 @@ const props = defineProps<{
   categoriesError: string;
   availableCategories: string[];
   isSubmitting: boolean;
-  selectedMode: "existing" | "create";
-  selectedCategory: string;
-  newCategoryName: string;
-  newCategoryError: string;
-  moveDisabled: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: "close"): void;
   (event: "confirm"): void;
-  (event: "update:selectedMode", value: "existing" | "create"): void;
-  (event: "update:selectedCategory", value: string): void;
-  (event: "update:newCategoryName", value: string): void;
 }>();
 
-const selectedModeModel = computed({
-  get: () => props.selectedMode,
-  set: (value: "existing" | "create") => emit("update:selectedMode", value),
+const selectedCategoryModel = defineModel<string>("category");
+
+function validateCategoryName(value: string, currentDirName: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return "请选择或输入分类名。";
+  }
+
+  if (props.availableCategories.includes(trimmedValue)) {
+    return "";
+  }
+
+  if (trimmedValue === "." || trimmedValue === "..") {
+    return "分类名不合法。";
+  }
+
+  if (/[\\/]/.test(trimmedValue)) {
+    return "仅支持一级分类。";
+  }
+
+  if (/[:*?"<>|]/.test(trimmedValue)) {
+    return "分类名包含不支持的字符。";
+  }
+
+  if (trimmedValue === currentDirName) {
+    return "当前文档已在该分类下。";
+  }
+
+  return "";
+}
+
+const selectCategoryError = computed(() =>
+  validateCategoryName(selectedCategoryModel.value, props.currentCategory),
+);
+
+const moveDisabled = computed(() => {
+  if (props.isSubmitting) {
+    return true;
+  }
+
+  return Boolean(selectCategoryError.value);
 });
 
-const selectedCategoryModel = computed({
-  get: () => props.selectedCategory,
-  set: (value: string) => emit("update:selectedCategory", value),
-});
-
-const newCategoryNameModel = computed({
-  get: () => props.newCategoryName,
-  set: (value: string) => emit("update:newCategoryName", value),
-});
 </script>
 
 <template>
@@ -44,7 +66,6 @@ const newCategoryNameModel = computed({
     width="560px"
     destroy-on-close
     append-to-body
-    align-center
     class="doc-manager-el-dialog"
     @close="emit('close')"
   >
@@ -69,24 +90,14 @@ const newCategoryNameModel = computed({
       />
 
       <template v-else>
-        <section class="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
-          <div class="space-y-2">
-            <p class="m-0 text-sm font-medium text-slate-700">归类方式</p>
-            <ElRadioGroup v-model="selectedModeModel" class="flex flex-col gap-3">
-              <ElRadio value="existing" size="large">移动到已有分类</ElRadio>
-              <ElRadio value="create" size="large">新建分类</ElRadio>
-            </ElRadioGroup>
-          </div>
-        </section>
-
         <section class="space-y-4">
           <div class="space-y-2">
-            <p class="m-0 text-sm font-medium text-slate-700">已有分类</p>
             <ElSelect
               v-model="selectedCategoryModel"
               placeholder="选择目标分类"
               class="w-full"
-              :disabled="selectedMode !== 'existing' || availableCategories.length === 0"
+              allow-create
+              filterable
             >
               <ElOption
                 v-for="category in availableCategories"
@@ -95,27 +106,12 @@ const newCategoryNameModel = computed({
                 :value="category"
               />
             </ElSelect>
-            <p
-              v-if="availableCategories.length === 0"
-              class="m-0 text-xs leading-5 text-slate-500"
-            >
-              暂无可选分类。
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <p class="m-0 text-sm font-medium text-slate-700">新分类</p>
-            <ElInput
-              v-model="newCategoryNameModel"
-              placeholder="输入新的一级分类名"
-              :disabled="selectedMode !== 'create'"
-            />
             <ElAlert
-              v-if="selectedMode === 'create' && newCategoryError"
+              v-if="selectCategoryError"
               type="error"
               :closable="false"
               show-icon
-              :title="newCategoryError"
+              :title="selectCategoryError"
             />
           </div>
         </section>
