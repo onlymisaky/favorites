@@ -1,1 +1,1 @@
-export { createDocManagerPlugin } from "./server/plugin";
+export { createDocManagerPlugin } from './server/plugin'

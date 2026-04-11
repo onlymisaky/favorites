@@ -1,24 +1,32 @@
 {
   "name": "favorites",
+  "type": "module",
   "version": "1.0.0",
   "description": "或许真的老了，记不住知识了",
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^22.10.2",
-    "@vue/compiler-sfc": "^3.5.13",
-    "element-plus": "^2.13.6",
-    "prettier": "^3.8.1",
-    "tailwindcss": "^4.2.2",
-    "vite-plugin-vitepress-bar": "^0.0.3",
-    "vitepress": "^1.5.0"
-  },
+  "keywords": [],
   "scripts": {
     "docs:dev": "vitepress dev --host",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",
-    "docs:reclassify": "node scripts/reclassify-wechat-by-title.mjs"
+    "docs:reclassify": "tsx scripts/reclassify-wechat-by-title.mjs",
+    "docs:apply:reclassify": "tsx scripts/reclassify-wechat-by-title.mjs --mode=apply",
+    "lint": "eslint .vitepress scripts eslint.config.mjs",
+    "lint:fix": "npm run lint -- --fix",
+    "typecheck:scripts": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^8.1.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^22.10.2",
+    "@vue/compiler-sfc": "^3.5.13",
+    "element-plus": "^2.13.6",
+    "eslint": "^10.2.0",
+    "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "vite-plugin-vitepress-bar": "^0.0.3",
+    "vitepress": "^1.5.0"
   }
 }

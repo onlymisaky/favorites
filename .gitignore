@@ -2,3 +2,5 @@ node_modules
 .vitepress/cache
 .vitepress/config.**.mjs
 package-lock.json
+*.local
+scripts/.cache

@@ -1,18 +1,19 @@
+import type { Ref } from 'vue'
 import {
   computed,
   onBeforeUnmount,
   onMounted,
   ref,
+
   watch,
-  type Ref,
-} from "vue";
+} from 'vue'
 import {
   clampPosition,
   getDefaultPanelPosition,
   getEventPoint,
-} from "../utils/panelPosition";
+} from '../utils/panelPosition'
 
-const panelStorageKey = "favorites-doc-manager-position";
+const panelStorageKey = 'favorites-doc-manager-position'
 
 export function useDraggablePanel(
   panelRef: Ref<HTMLElement | null>,
@@ -20,191 +21,192 @@ export function useDraggablePanel(
   isMoveDialogOpen: Ref<boolean>,
   isSummaryDialogOpen: Ref<boolean>,
 ) {
-  const panelPosition = ref<{ x: number; y: number } | null>(null);
-  const isDragging = ref(false);
-  const dragOffset = ref({ x: 0, y: 0 });
+  const panelPosition = ref<{ x: number, y: number } | null>(null)
+  const isDragging = ref(false)
+  const dragOffset = ref({ x: 0, y: 0 })
 
   const panelStyle = computed(() => {
     if (!panelPosition.value) {
-      return {};
+      return {}
     }
 
     return {
       left: `${panelPosition.value.x}px`,
       top: `${panelPosition.value.y}px`,
-      right: "auto",
-      bottom: "auto",
-    };
-  });
+      right: 'auto',
+      bottom: 'auto',
+    }
+  })
 
   watch(
     isVisible,
     (visible) => {
       if (visible) {
-        restorePanelPosition();
+        restorePanelPosition()
         requestAnimationFrame(() => {
-          clampPanelToViewport();
-        });
+          clampPanelToViewport()
+        })
       }
     },
     { immediate: true },
-  );
+  )
 
   onMounted(() => {
-    window.addEventListener("resize", handleWindowResize);
-    restorePanelPosition();
+    window.addEventListener('resize', handleWindowResize)
+    restorePanelPosition()
     requestAnimationFrame(() => {
-      clampPanelToViewport();
-    });
-  });
+      clampPanelToViewport()
+    })
+  })
 
   onBeforeUnmount(() => {
-    window.removeEventListener("resize", handleWindowResize);
-    stopDragging();
-  });
+    window.removeEventListener('resize', handleWindowResize)
+    stopDragging()
+  })
 
   function handleDragStart(event: MouseEvent | TouchEvent) {
     if (
-      !panelRef.value ||
-      isMoveDialogOpen.value ||
-      isSummaryDialogOpen.value
+      !panelRef.value
+      || isMoveDialogOpen.value
+      || isSummaryDialogOpen.value
     ) {
-      return;
+      return
     }
 
-    const point = getEventPoint(event);
+    const point = getEventPoint(event)
 
     if (!point) {
-      return;
+      return
     }
 
-    const rect = panelRef.value.getBoundingClientRect();
+    const rect = panelRef.value.getBoundingClientRect()
     panelPosition.value = {
       x: rect.left,
       y: rect.top,
-    };
+    }
     dragOffset.value = {
       x: point.clientX - rect.left,
       y: point.clientY - rect.top,
-    };
-    isDragging.value = true;
+    }
+    isDragging.value = true
 
-    window.addEventListener("mousemove", handleDragMove);
-    window.addEventListener("mouseup", stopDragging);
-    window.addEventListener("touchmove", handleDragMove, { passive: false });
-    window.addEventListener("touchend", stopDragging);
+    window.addEventListener('mousemove', handleDragMove)
+    window.addEventListener('mouseup', stopDragging)
+    window.addEventListener('touchmove', handleDragMove, { passive: false })
+    window.addEventListener('touchend', stopDragging)
   }
 
   function handleDragMove(event: MouseEvent | TouchEvent) {
     if (!isDragging.value || !panelRef.value) {
-      return;
+      return
     }
 
-    const point = getEventPoint(event);
+    const point = getEventPoint(event)
 
     if (!point) {
-      return;
+      return
     }
 
     if (event.cancelable) {
-      event.preventDefault();
+      event.preventDefault()
     }
 
     panelPosition.value = clampPosition(
       panelRef,
       point.clientX - dragOffset.value.x,
       point.clientY - dragOffset.value.y,
-    );
+    )
   }
 
   function stopDragging() {
     if (isDragging.value) {
-      isDragging.value = false;
-      persistPanelPosition();
+      isDragging.value = false
+      persistPanelPosition()
     }
 
-    window.removeEventListener("mousemove", handleDragMove);
-    window.removeEventListener("mouseup", stopDragging);
-    window.removeEventListener("touchmove", handleDragMove);
-    window.removeEventListener("touchend", stopDragging);
+    window.removeEventListener('mousemove', handleDragMove)
+    window.removeEventListener('mouseup', stopDragging)
+    window.removeEventListener('touchmove', handleDragMove)
+    window.removeEventListener('touchend', stopDragging)
   }
 
   function handleWindowResize() {
-    clampPanelToViewport();
+    clampPanelToViewport()
   }
 
   function restorePanelPosition() {
-    if (typeof window === "undefined") {
-      return;
+    if (typeof window === 'undefined') {
+      return
     }
 
-    const savedValue = window.localStorage.getItem(panelStorageKey);
+    const savedValue = window.localStorage.getItem(panelStorageKey)
 
     if (savedValue) {
       try {
         const parsedValue = JSON.parse(savedValue) as {
-          x?: number;
-          y?: number;
-        };
+          x?: number
+          y?: number
+        }
 
         if (
-          typeof parsedValue.x === "number" &&
-          typeof parsedValue.y === "number"
+          typeof parsedValue.x === 'number'
+          && typeof parsedValue.y === 'number'
         ) {
           panelPosition.value = clampPosition(
             panelRef,
             parsedValue.x,
             parsedValue.y,
-          );
-          return;
+          )
+          return
         }
-      } catch {
-        window.localStorage.removeItem(panelStorageKey);
+      }
+      catch {
+        window.localStorage.removeItem(panelStorageKey)
       }
     }
 
     requestAnimationFrame(() => {
-      const defaultPosition = getDefaultPanelPosition(panelRef);
+      const defaultPosition = getDefaultPanelPosition(panelRef)
 
       if (defaultPosition) {
-        panelPosition.value = defaultPosition;
+        panelPosition.value = defaultPosition
       }
-    });
+    })
   }
 
   function persistPanelPosition() {
-    if (!panelPosition.value || typeof window === "undefined") {
-      return;
+    if (!panelPosition.value || typeof window === 'undefined') {
+      return
     }
 
     window.localStorage.setItem(
       panelStorageKey,
       JSON.stringify(panelPosition.value),
-    );
+    )
   }
 
   function clampPanelToViewport() {
     if (!panelPosition.value) {
-      const defaultPosition = getDefaultPanelPosition(panelRef);
+      const defaultPosition = getDefaultPanelPosition(panelRef)
 
       if (defaultPosition) {
-        panelPosition.value = defaultPosition;
+        panelPosition.value = defaultPosition
       }
 
-      return;
+      return
     }
 
     panelPosition.value = clampPosition(
       panelRef,
       panelPosition.value.x,
       panelPosition.value.y,
-    );
-    persistPanelPosition();
+    )
+    persistPanelPosition()
   }
 
   return {
     panelStyle,
     isDragging,
     handleDragStart,
-  };
+  }
 }

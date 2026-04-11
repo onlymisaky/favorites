@@ -1,61 +1,58 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { useData, useRouter, withBase } from "vitepress";
-import { DOC_MANAGER_BASE } from "../../shared";
-import type { CategoryResponse, MutationResponse } from "../../shared/types";
-import { getDocManagerFallbackPath, getDocManagerReturnPath } from "../history";
-import { useDraggablePanel } from "../composables/useDraggablePanel";
-import { useSummaryPreview } from "../composables/useSummaryPreview";
-import DocManagerMoveDialog from "./DocManagerMoveDialog.vue";
-import DocManagerSummaryDialog from "./DocManagerSummaryDialog.vue";
+import type { CategoryResponse, MutationResponse } from '../../shared/types'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useData, useRouter, withBase } from 'vitepress'
+import { computed, ref, watch } from 'vue'
+import { DOC_MANAGER_BASE } from '../../shared'
+import { useDraggablePanel } from '../composables/useDraggablePanel'
+import { useSummaryPreview } from '../composables/useSummaryPreview'
+import { getDocManagerFallbackPath, getDocManagerReturnPath } from '../history'
+import DocManagerMoveDialog from './DocManagerMoveDialog.vue'
+import DocManagerSummaryDialog from './DocManagerSummaryDialog.vue'
 
-const createMode = "create";
-const existingMode = "existing";
+const router = useRouter()
+const { page, frontmatter } = useData()
 
-const router = useRouter();
-const { page, frontmatter } = useData();
-
-const panelRef = ref<HTMLElement | null>(null);
-const isSubmitting = ref(false);
-const isMoveDialogOpen = ref(false);
-const isSummaryDialogOpen = ref(false);
-const categories = ref<string[]>([]);
-const categoriesLoaded = ref(false);
-const categoriesError = ref("");
-const selectedCategory = ref("");
-const feedbackMessage = ref("");
-const feedbackType = ref<"error" | "success" | "">("");
-const summarizeOnOpen = ref(true);
+const panelRef = ref<HTMLElement | null>(null)
+const isSubmitting = ref(false)
+const isMoveDialogOpen = ref(false)
+const isSummaryDialogOpen = ref(false)
+const categories = ref<string[]>([])
+const categoriesLoaded = ref(false)
+const categoriesError = ref('')
+const selectedCategory = ref('')
+const feedbackMessage = ref('')
+const feedbackType = ref<'error' | 'success' | ''>('')
+const summarizeOnOpen = ref(true)
 
 const isVisible = computed(() => {
   if (!import.meta.env.DEV) {
-    return false;
+    return false
   }
 
-  if (page.value.isNotFound || frontmatter.value.layout === "home") {
-    return false;
+  if (page.value.isNotFound || frontmatter.value.layout === 'home') {
+    return false
   }
 
-  const nextRelativePath = page.value.relativePath;
+  const nextRelativePath = page.value.relativePath
   return (
-    Boolean(nextRelativePath) &&
-    nextRelativePath.endsWith(".md") &&
-    !nextRelativePath.endsWith("/index.md")
-  );
-});
+    Boolean(nextRelativePath)
+    && nextRelativePath.endsWith('.md')
+    && !nextRelativePath.endsWith('/index.md')
+  )
+})
 
-const relativePath = computed(() => page.value.relativePath);
-const currentCategory = computed(() => relativePath.value.split("/")[0] ?? "");
+const relativePath = computed(() => page.value.relativePath)
+const currentCategory = computed(() => relativePath.value.split('/')[0] ?? '')
 const currentFileName = computed(
-  () => relativePath.value.split("/").at(-1) ?? "",
-);
+  () => relativePath.value.split('/').at(-1) ?? '',
+)
 const availableCategories = computed(() =>
-  categories.value.filter((category) => category !== currentCategory.value),
-);
+  categories.value.filter(category => category !== currentCategory.value),
+)
 const feedbackAlertType = computed(() =>
-  feedbackType.value === "error" ? "error" : "success",
-);
+  feedbackType.value === 'error' ? 'error' : 'success',
+)
 
 const {
   isSummaryLoading,
@@ -74,148 +71,150 @@ const {
   generateSummaryPreview,
   applySummary,
   resetSummaryState,
-} = useSummaryPreview(relativePath);
+} = useSummaryPreview(relativePath)
 
 const summaryApplyDisabled = computed(
   () =>
-    isSubmitting.value ||
-    isSummaryLoading.value ||
-    !summaryPreviewContent.value.trim(),
-);
+    isSubmitting.value
+    || isSummaryLoading.value
+    || !summaryPreviewContent.value.trim(),
+)
 
 const { panelStyle, isDragging, handleDragStart } = useDraggablePanel(
   panelRef,
   isVisible,
   isMoveDialogOpen,
   isSummaryDialogOpen,
-);
-
+)
 
 watch(isMoveDialogOpen, (open) => {
   if (!open) {
-    categoriesError.value = "";
+    categoriesError.value = ''
   }
-});
+})
 
 watch(isSummaryDialogOpen, (open) => {
   if (!open) {
-    resetSummaryState();
+    resetSummaryState()
   }
-});
+})
 
 async function openMoveDialog() {
-  isMoveDialogOpen.value = true;
-  clearPanelFeedback();
+  isMoveDialogOpen.value = true
+  clearPanelFeedback()
 
   if (!categoriesLoaded.value) {
-    await loadCategories();
+    await loadCategories()
   }
 }
 
 async function openSummaryDialog() {
   if (isSubmitting.value || isSummaryLoading.value) {
-    return;
+    return
   }
 
-  isSummaryDialogOpen.value = true;
-  clearPanelFeedback();
+  isSummaryDialogOpen.value = true
+  clearPanelFeedback()
 
   if (summarizeOnOpen.value) {
-    await generateSummaryPreview();
+    await generateSummaryPreview()
   }
 }
 
 function closeSummaryDialog() {
-  isSummaryDialogOpen.value = false;
+  isSummaryDialogOpen.value = false
 }
 
 async function loadCategories() {
-  categoriesError.value = "";
+  categoriesError.value = ''
 
   try {
-    const response = await fetch(withBase(DOC_MANAGER_BASE + "/categories"));
-    const data = (await response.json()) as CategoryResponse;
+    const response = await fetch(withBase(`${DOC_MANAGER_BASE}/categories`))
+    const data = (await response.json()) as CategoryResponse
 
     if (!response.ok || !data.success || !data.categories) {
-      categoriesError.value = data.error ?? "分类列表加载失败。";
-      return;
+      categoriesError.value = data.error ?? '分类列表加载失败。'
+      return
     }
 
-    categories.value = data.categories;
-    categoriesLoaded.value = true;
-  } catch {
-    categoriesError.value = "分类列表加载失败。";
+    categories.value = data.categories
+    categoriesLoaded.value = true
+  }
+  catch {
+    categoriesError.value = '分类列表加载失败。'
   }
 }
 
 async function handleDelete() {
   if (isSubmitting.value || isSummaryLoading.value) {
-    return;
+    return
   }
 
   try {
     await ElMessageBox.confirm(
       `确认删除文档「${currentFileName.value}」吗？`,
-      "删除文档",
+      '删除文档',
       {
-        type: "warning",
-        confirmButtonText: "确认删除",
-        cancelButtonText: "取消",
+        type: 'warning',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
         draggable: true,
       },
-    );
-  } catch {
-    return;
+    )
+  }
+  catch {
+    return
   }
 
   await submitMutation(
-    "/delete",
+    '/delete',
     { relativePath: relativePath.value },
-    "文档已删除。",
-  );
+    '文档已删除。',
+  )
 }
 
 async function handleMove() {
-
   await submitMutation(
-    "/move",
+    '/move',
     {
       relativePath: relativePath.value,
       targetDirName: selectedCategory.value,
     },
-    "文档已归类。",
-  );
+    '文档已归类。',
+  )
 }
 
 async function handleApplySummary() {
   if (summaryApplyDisabled.value) {
-    return;
+    return
   }
 
-  isSubmitting.value = true;
-  summaryError.value = "";
-  clearPanelFeedback();
+  isSubmitting.value = true
+  summaryError.value = ''
+  clearPanelFeedback()
 
   try {
-    const data = await applySummary();
+    const data = await applySummary()
 
     if (!data.success) {
-      summaryError.value = data.error ?? "总结写回失败。";
-      return;
+      summaryError.value = data.error ?? '总结写回失败。'
+      return
     }
 
-    feedbackType.value = "success";
-    feedbackMessage.value = "总结已覆盖原文。";
-    ElMessage.success("总结已覆盖原文。");
-    isSummaryDialogOpen.value = false;
+    feedbackType.value = 'success'
+    feedbackMessage.value = '总结已覆盖原文。'
+    ElMessage.success('总结已覆盖原文。')
+    isSummaryDialogOpen.value = false
 
     window.setTimeout(() => {
-      window.location.reload();
-    }, 300);
-  } catch {
-    summaryError.value = "总结写回失败。";
-  } finally {
-    isSubmitting.value = false;
+      window.location.reload()
+    }, 300)
+  }
+  catch {
+    summaryError.value = '总结写回失败。'
+  }
+  finally {
+    isSubmitting.value = false
   }
 }
 
@@ -224,71 +223,71 @@ async function submitMutation(
   payload: Record<string, string>,
   successMessage: string,
 ) {
-  isSubmitting.value = true;
-  clearPanelFeedback();
-  let succeeded = false;
+  isSubmitting.value = true
+  clearPanelFeedback()
+  let succeeded = false
 
   try {
     const response = await fetch(withBase(DOC_MANAGER_BASE + pathname), {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
-    });
-    const data = (await response.json()) as MutationResponse;
+    })
+    const data = (await response.json()) as MutationResponse
 
     if (!response.ok || !data.success) {
-      feedbackType.value = "error";
-      feedbackMessage.value = data.error ?? "操作失败。";
-      ElMessage.error(feedbackMessage.value);
-      return;
+      feedbackType.value = 'error'
+      feedbackMessage.value = data.error ?? '操作失败。'
+      ElMessage.error(feedbackMessage.value)
+      return
     }
 
-    feedbackType.value = "success";
-    feedbackMessage.value = successMessage;
-    ElMessage.success(successMessage);
-    succeeded = true;
+    feedbackType.value = 'success'
+    feedbackMessage.value = successMessage
+    ElMessage.success(successMessage)
+    succeeded = true
 
-    const redirectPath =
-      getDocManagerReturnPath() ||
-      data.redirectPath ||
-      getDocManagerFallbackPath();
-    await router.go(redirectPath);
-  } catch {
-    feedbackType.value = "error";
-    feedbackMessage.value = "操作失败。";
-    ElMessage.error("操作失败。");
-  } finally {
-    isSubmitting.value = false;
+    const redirectPath
+      = getDocManagerReturnPath()
+        || data.redirectPath
+        || getDocManagerFallbackPath()
+    await router.go(redirectPath)
+  }
+  catch {
+    feedbackType.value = 'error'
+    feedbackMessage.value = '操作失败。'
+    ElMessage.error('操作失败。')
+  }
+  finally {
+    isSubmitting.value = false
     if (succeeded) {
-      isMoveDialogOpen.value = false;
+      isMoveDialogOpen.value = false
     }
   }
 }
 
 function clearPanelFeedback() {
-  feedbackMessage.value = "";
-  feedbackType.value = "";
+  feedbackMessage.value = ''
+  feedbackType.value = ''
 }
 
 function updateSelectedSummaryModel(
-  value: (typeof selectedSummaryModel)["value"],
+  value: (typeof selectedSummaryModel)['value'],
 ) {
-  selectedSummaryModel.value = value;
+  selectedSummaryModel.value = value
 }
 
 function updateSelectedReviewModel(
-  value: (typeof selectedReviewModel)["value"],
+  value: (typeof selectedReviewModel)['value'],
 ) {
-  selectedReviewModel.value = value;
+  selectedReviewModel.value = value
 }
 
 function updateSummaryPreviewContent(value: string) {
-  summaryPreviewContent.value = value;
+  summaryPreviewContent.value = value
 }
-
-
 </script>
 
 <template>
@@ -369,7 +368,9 @@ function updateSummaryPreviewContent(value: string) {
       :closable="false"
       show-icon
     >
-      <template #title>{{ feedbackMessage }}</template>
+      <template #title>
+        {{ feedbackMessage }}
+      </template>
     </ElAlert>
 
     <DocManagerMoveDialog

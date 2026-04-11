@@ -1,1 +1,1 @@
-import "./reclassify/index.mjs";
+import './reclassify/index.mjs'

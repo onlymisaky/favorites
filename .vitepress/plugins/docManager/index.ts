@@ -1,3 +1,3 @@
-export { createDocManagerPlugin } from "./vite";
-export { createDocManagerTheme } from "./theme";
-export * from "./shared";
+export * from './shared'
+export { createDocManagerTheme } from './theme'
+export { createDocManagerPlugin } from './vite'

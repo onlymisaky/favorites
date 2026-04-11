@@ -1,1 +1,1 @@
-export { createDocManagerRequestHandler } from "./router";
+export { createDocManagerRequestHandler } from './router'

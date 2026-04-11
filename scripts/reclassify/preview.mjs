@@ -1,15 +1,15 @@
-import path from "node:path";
-import { classifyBatchByTitle, createBatchFailureDecisions, normalizeBatchResults } from "./classify.mjs";
-import { chunkItems } from "./utils/common.mjs";
-import { createResultPayload, printPreview, writeResultFile } from "./result-file.mjs";
-import { listMarkdownFiles, listTopLevelCategories, resolveTargetDir } from "./scan.mjs";
+import path from 'node:path'
+import { classifyBatchByTitle, createBatchFailureDecisions, normalizeBatchResults } from './classify.mjs'
+import { createResultPayload, printPreview, writeResultFile } from './result-file.mjs'
+import { listMarkdownFiles, listTopLevelCategories, resolveTargetDir } from './scan.mjs'
+import { chunkItems } from './utils/common.mjs'
 
 export async function runPreview(options) {
-  const scanContext = await collectPreviewScanContext(options);
+  const scanContext = await collectPreviewScanContext(options)
 
   if (scanContext.selectedFiles.length === 0) {
-    console.log("没有可处理的 Markdown 文件。");
-    return;
+    console.log('没有可处理的 Markdown 文件。')
+    return
   }
 
   printPreviewHeader({
@@ -17,7 +17,7 @@ export async function runPreview(options) {
     targetDir: scanContext.targetDir,
     selectedFileCount: scanContext.selectedFiles.length,
     totalFileCount: scanContext.markdownFiles.length,
-  });
+  })
 
   const decisions = await classifyFilesInBatches({
     batchSize: options.args.batchSize,
@@ -27,7 +27,7 @@ export async function runPreview(options) {
       includeNewCategories: options.args.includeNewCategories,
     },
     selectedFiles: scanContext.selectedFiles,
-  });
+  })
   const resultPayload = createResultPayload({
     args: options.args,
     categories: scanContext.categories,
@@ -35,28 +35,28 @@ export async function runPreview(options) {
     selectedFileCount: scanContext.selectedFiles.length,
     targetDir: scanContext.targetDir,
     totalFiles: scanContext.markdownFiles.length,
-  });
+  })
 
-  await writeResultFile(options.resultFilePath, resultPayload);
+  await writeResultFile(options.resultFilePath, resultPayload)
   printPreview({
     decisions,
     summary: resultPayload.summary,
     resultFilePath: options.resultFilePath,
     targetDir: scanContext.targetDir,
-  });
+  })
 }
 
 export async function collectPreviewScanContext(options) {
-  const targetDir = await resolveTargetDir(options.docsRoot, options.args.dir);
+  const targetDir = await resolveTargetDir(options.docsRoot, options.args.dir)
   const scanRoot = targetDir
     ? path.join(options.docsRoot, targetDir)
-    : options.docsRoot;
-  const categories = await listTopLevelCategories(options.docsRoot);
-  const markdownFiles = await listMarkdownFiles(scanRoot, options.docsRoot);
-  const selectedFiles =
-    options.args.limit > 0
+    : options.docsRoot
+  const categories = await listTopLevelCategories(options.docsRoot)
+  const markdownFiles = await listMarkdownFiles(scanRoot, options.docsRoot)
+  const selectedFiles
+    = options.args.limit > 0
       ? markdownFiles.slice(0, options.args.limit)
-      : markdownFiles;
+      : markdownFiles
 
   return {
     targetDir,
@@ -64,32 +64,32 @@ export async function collectPreviewScanContext(options) {
     categories,
     markdownFiles,
     selectedFiles,
-  };
+  }
 }
 
 export function printPreviewHeader(options) {
   console.log(
     [
-      "Mode: preview",
+      'Mode: preview',
       `Model: ${options.args.model}`,
       `Files: ${options.selectedFileCount}/${options.totalFileCount}`,
-      `Dir: ${options.targetDir ?? "(all)"}`,
+      `Dir: ${options.targetDir ?? '(all)'}`,
       `Batch size: ${options.args.batchSize}`,
       `Include new categories: ${String(options.args.includeNewCategories)}`,
-    ].join(" | "),
-  );
+    ].join(' | '),
+  )
 }
 
 export async function classifyFilesInBatches(options) {
-  const batches = chunkItems(options.selectedFiles, options.batchSize);
-  const decisions = [];
+  const batches = chunkItems(options.selectedFiles, options.batchSize)
+  const decisions = []
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
-    const batchFiles = batches[batchIndex];
+    const batchFiles = batches[batchIndex]
 
     console.log(
       `[Batch ${batchIndex + 1}/${batches.length}] 分析 ${batchFiles.length} 篇文件名`,
-    );
+    )
 
     decisions.push(
       ...(await classifySingleBatch({
@@ -98,10 +98,10 @@ export async function classifyFilesInBatches(options) {
         includeNewCategories: options.batchOptions.includeNewCategories,
         model: options.batchOptions.model,
       })),
-    );
+    )
   }
 
-  return decisions;
+  return decisions
 }
 
 export async function classifySingleBatch(options) {
@@ -111,18 +111,19 @@ export async function classifySingleBatch(options) {
       categories: options.categories,
       model: options.model,
       includeNewCategories: options.includeNewCategories,
-    });
+    })
 
     return normalizeBatchResults({
       batchFiles: options.batchFiles,
       batchResults,
       categories: options.categories,
       includeNewCategories: options.includeNewCategories,
-    });
-  } catch (error) {
+    })
+  }
+  catch (error) {
     return createBatchFailureDecisions(
       options.batchFiles,
-      error instanceof Error ? error.message : "批量分类请求失败。",
-    );
+      error instanceof Error ? error.message : '批量分类请求失败。',
+    )
   }
 }

@@ -1,16 +1,16 @@
-import type { Theme } from "vitepress";
-import DefaultTheme from "vitepress/theme";
-import "element-plus/dist/index.css";
-import { h } from "vue";
-import type { DocManagerOptions } from "../shared/types";
-import { initializeDocManagerHistory, recordDocManagerRoute } from "./history";
-import { installDocManagerUi } from "./installUi";
-import DocManagerPanel from "./components/DocManagerPanel.vue";
-import "./style.css";
+import type { Theme } from 'vitepress'
+import type { DocManagerOptions } from '../shared/types'
+import DefaultTheme from 'vitepress/theme'
+import { h } from 'vue'
+import DocManagerPanel from './components/DocManagerPanel.vue'
+import { initializeDocManagerHistory, recordDocManagerRoute } from './history'
+import { installDocManagerUi } from './installUi'
+import 'element-plus/dist/index.css'
+import './style.css'
 
 export function createDocManagerTheme(options: DocManagerOptions = {}) {
-  const mountSlot = options.mountSlot ?? "doc-top";
-  const shouldMountPanel = import.meta.env.DEV;
+  const mountSlot = options.mountSlot ?? 'doc-top'
+  const shouldMountPanel = import.meta.env.DEV
 
   return {
     Layout: () =>
@@ -19,14 +19,14 @@ export function createDocManagerTheme(options: DocManagerOptions = {}) {
       }),
     enhanceApp: (({ app, router }) => {
       if (!shouldMountPanel) {
-        return;
+        return
       }
 
-      installDocManagerUi(app);
-      initializeDocManagerHistory(router.route.path);
+      installDocManagerUi(app)
+      initializeDocManagerHistory(router.route.path)
       router.onAfterRouteChange = (to) => {
-        recordDocManagerRoute(to);
-      };
-    }) satisfies NonNullable<Theme["enhanceApp"]>,
-  };
+        recordDocManagerRoute(to)
+      }
+    }) satisfies NonNullable<Theme['enhanceApp']>,
+  }
 }

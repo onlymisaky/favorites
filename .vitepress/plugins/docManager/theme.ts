@@ -1,1 +1,1 @@
-export { createDocManagerTheme } from "./client/theme";
+export { createDocManagerTheme } from './client/theme'
