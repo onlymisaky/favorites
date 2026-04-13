@@ -8,7 +8,8 @@ import {
 interface CursorChatRequest {
   model: DocSummaryModel
   relativePath: string
-  prompt: string
+  systemPrompt: string
+  userPrompt: string
   emptyContentError: string
   failureMessage: string
 }
@@ -93,7 +94,17 @@ async function requestCursorChat(options: CursorChatRequest) {
           parts: [
             {
               type: 'text',
-              text: options.prompt,
+              text: options.systemPrompt,
+            },
+          ],
+          id: createSummaryRequestId(),
+          role: 'system',
+        },
+        {
+          parts: [
+            {
+              type: 'text',
+              text: options.userPrompt,
             },
           ],
           id: createSummaryRequestId(),

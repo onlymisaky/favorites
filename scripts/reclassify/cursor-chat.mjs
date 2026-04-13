@@ -28,7 +28,17 @@ export async function callCursorChat(options) {
           parts: [
             {
               type: 'text',
-              text: options.prompt,
+              text: options.systemPrompt,
+            },
+          ],
+          id: createRequestId(),
+          role: 'system',
+        },
+        {
+          parts: [
+            {
+              type: 'text',
+              text: options.userPrompt,
             },
           ],
           id: createRequestId(),

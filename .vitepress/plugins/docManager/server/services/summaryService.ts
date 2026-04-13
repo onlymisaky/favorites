@@ -205,10 +205,13 @@ async function generateFinalSummaryMarkdown(options: {
   previousReviewDetails?: SummaryAttemptOptions['previousReviewDetails']
   attemptCount?: number
 }) {
+  const prompt = buildSummaryPrompt(options)
+
   return callCursorChat({
     model: options.model,
     relativePath: options.relativePath,
-    prompt: buildSummaryPrompt(options),
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
     emptyContentError: 'Summary generation returned empty content.',
     failureMessage: 'Summary generation failed.',
   })
@@ -228,11 +231,14 @@ async function streamFinalSummaryMarkdown(
   },
   onDelta: (delta: string) => void,
 ) {
+  const prompt = buildSummaryPrompt(options)
+
   return streamCursorChat(
     {
       model: options.model,
       relativePath: options.relativePath,
-      prompt: buildSummaryPrompt(options),
+      systemPrompt: prompt.systemPrompt,
+      userPrompt: prompt.userPrompt,
       emptyContentError: 'Summary generation returned empty content.',
       failureMessage: 'Summary generation failed.',
     },
@@ -248,10 +254,13 @@ async function reviewSummaryMarkdown(options: {
   summaryBody: string
   model: DocSummaryModel
 }) {
+  const prompt = buildSummaryReviewPrompt(options)
+
   const content = await callCursorChat({
     model: options.model,
     relativePath: options.relativePath,
-    prompt: buildSummaryReviewPrompt(options),
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
     emptyContentError: 'Summary review returned empty content.',
     failureMessage: 'Summary review failed.',
   })
@@ -271,10 +280,13 @@ async function extractSummaryCoverageSnapshot(options: {
   title: string
   model: DocSummaryModel
 }) {
+  const prompt = buildCoverageExtractionPrompt(options)
+
   const content = await callCursorChat({
     model: options.model,
     relativePath: options.relativePath,
-    prompt: buildCoverageExtractionPrompt(options),
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
     emptyContentError: 'Summary coverage extraction returned empty content.',
     failureMessage: 'Summary coverage extraction failed.',
   })
@@ -295,10 +307,13 @@ async function summarizeChunkMarkdown(options: {
   title: string
   model: DocSummaryModel
 }) {
+  const prompt = buildChunkSummaryPrompt(options)
+
   return callCursorChat({
     model: options.model,
     relativePath: options.relativePath,
-    prompt: buildChunkSummaryPrompt(options),
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
     emptyContentError: 'Chunk summary generation returned empty content.',
     failureMessage: 'Chunk summary generation failed.',
   })

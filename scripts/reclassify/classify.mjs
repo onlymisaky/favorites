@@ -22,7 +22,8 @@ export async function classifyBatchByTitle(options) {
   const content = await callCursorChat({
     model: options.model,
     relativePath: options.batchFiles[0],
-    prompt,
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
     emptyContentError: '批量分类结果为空。',
     failureMessage: '批量分类请求失败。',
   })
@@ -58,32 +59,35 @@ export function buildBatchClassificationPrompt(options) {
     ? '如果现有分类都不合适，可以提出新的顶层分类名；新分类名必须简洁、通用、适合作为长期目录名。'
     : '只能从现有分类中选择，不允许输出新分类。'
 
-  return [
-    '你在帮助维护一个 VitePress 文档目录。',
-    '任务：对一批 Markdown 文档只根据文件名进行顶层分类判断。',
-    '禁止读取、推断或依赖正文内容；如果文件名信息不足，只能基于文件名做最稳妥判断。',
-    '请覆盖输入中的每一个 id，并且每个 id 只输出一次。',
-    '',
-    '现有顶层分类：',
-    existingCategories,
-    '',
-    newCategoryRule,
-    '请优先复用已有分类，只有在明显不适合时才创建新分类。',
-    'reason 必须简短说明为什么这个标题属于该分类，不要复述原始标题，不要直接引用标题中的引号内容。',
-    'confidence 输出 0 到 1 之间的小数。',
-    'relativePath 仅作为输入参考。输出时优先使用 id，不要手写或复述 relativePath。',
-    '如果你确实输出字符串字段，必须保证是合法 JSON 字符串，内部双引号必须写成 \\"。',
-    '',
-    '错误示例：',
-    '{"id":1,"reason":"文件名提到"后台管理模板"","confidence":0.8}',
-    '正确示例：',
-    '{"id":1,"reason":"标题明确提到后台管理模板","confidence":0.8}',
-    '',
-    '待分类文件列表(JSON)：',
-    batchInputJson,
-    '',
-    '只输出 JSON，不要解释，不要 Markdown。推荐格式：{"results":[{"id":1,"targetCategory":"string","reason":"string","confidence":0.0}]}。兼容格式：{"results":[{"relativePath":"string","targetCategory":"string","reason":"string","confidence":0.0}]}',
-  ].join('\n')
+  return {
+    systemPrompt: [
+      '你在帮助维护一个 VitePress 文档目录。',
+      '任务：对一批 Markdown 文档只根据文件名进行顶层分类判断。',
+      '禁止读取、推断或依赖正文内容；如果文件名信息不足，只能基于文件名做最稳妥判断。',
+      '请覆盖输入中的每一个 id，并且每个 id 只输出一次。',
+      '请优先复用已有分类，只有在明显不适合时才创建新分类。',
+      'reason 必须简短说明为什么这个标题属于该分类，不要复述原始标题，不要直接引用标题中的引号内容。',
+      'confidence 输出 0 到 1 之间的小数。',
+      'relativePath 仅作为输入参考。输出时优先使用 id，不要手写或复述 relativePath。',
+      '如果你确实输出字符串字段，必须保证是合法 JSON 字符串，内部双引号必须写成 \\"。',
+      '',
+      '错误示例：',
+      '{"id":1,"reason":"文件名提到"后台管理模板"","confidence":0.8}',
+      '正确示例：',
+      '{"id":1,"reason":"标题明确提到后台管理模板","confidence":0.8}',
+      '',
+      '只输出 JSON，不要解释，不要 Markdown。推荐格式：{"results":[{"id":1,"targetCategory":"string","reason":"string","confidence":0.0}]}。兼容格式：{"results":[{"relativePath":"string","targetCategory":"string","reason":"string","confidence":0.0}]}',
+    ].join('\n'),
+    userPrompt: [
+      '现有顶层分类：',
+      existingCategories,
+      '',
+      newCategoryRule,
+      '',
+      '待分类文件列表(JSON)：',
+      batchInputJson,
+    ].join('\n'),
+  }
 }
 
 export function parseBatchClassificationResult(content) {
