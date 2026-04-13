@@ -1,6 +1,5 @@
 import {
   CURSOR_CHAT_URL,
-  DEFAULT_CURSOR_COOKIE,
 } from './config.mjs'
 import { createRequestId } from './utils/common.mjs'
 
@@ -8,13 +7,7 @@ export async function callCursorChat(options) {
   const response = await fetch(CURSOR_CHAT_URL, {
     method: 'POST',
     headers: {
-      'accept': '*/*',
-      'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
-      'cache-control': 'no-cache',
       'content-type': 'application/json',
-      'pragma': 'no-cache',
-      'cookie': process.env.DOC_MANAGER_CURSOR_COOKIE || DEFAULT_CURSOR_COOKIE,
-      'Referer': 'https://cursor.com/help',
     },
     body: JSON.stringify({
       context: [
