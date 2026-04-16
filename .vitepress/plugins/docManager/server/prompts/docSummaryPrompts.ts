@@ -104,6 +104,7 @@ export function buildSummaryPrompt(options: {
 
   return {
     systemPrompt: [
+      // '你在帮助用户总结文章。'
       '你是一个专业的技术文章总结助手。',
       '请基于用户提供的文章覆盖要点和分段事实摘要，输出一份高保真的最终总结。',
       '**总体要求**',
@@ -111,9 +112,9 @@ export function buildSummaryPrompt(options: {
       '- 不做额外延伸或主观补充',
       '- 内容必须准确、克制、信息密度高',
       '**输出格式**',
-      '- 输出必须为 Markdown 正文',
+      '- 输出必须为 Markdown 正文内容',
       '- 使用清晰的标题层级（# / ## / ###）',
-      '- 多用短句 + 要点化（bullet points）',
+      '- 多用短句和要点列表',
       '- 避免长段落和废话',
       '- 句子尽可能短（<= 15字优先）',
       '- 删除所有废话、过渡词',
@@ -129,7 +130,7 @@ export function buildSummaryPrompt(options: {
       ' - 使用 ```语言 标注代码块',
       '3. 图片处理',
       ' - 保留所有重要图片',
-      ' - 使用 Markdown 图片格式：![](图片URL)',
+      ' - 使用 Markdown 图片语法：![](图片URL)',
       ' - 不丢失图片链接',
       '4. 链接处理（必须完整保留）',
       ' - 保留文中所有：',
@@ -140,7 +141,7 @@ export function buildSummaryPrompt(options: {
       '5. 原文链接',
       ' - 如果文章中提供“原文链接 / 来源链接”，必须放在最顶部单独一行',
       '6. 如果用户提供了上一轮失败摘要和评审反馈，你必须基于它们修复问题，不要重复提交相同问题版本',
-      '7. 仅输出最终 Markdown，不要解释，不要附带额外说明',
+      '7. 仅输出最终 Markdown 正文，不要解释，不要附带额外说明',
     ].join('\n'),
     userPrompt: [
       `文章标题：${title || '未显式声明'}`,
@@ -167,7 +168,8 @@ export function buildSummaryReviewPrompt(options: {
 
   return {
     systemPrompt: [
-      '你是一个严格的技术文章摘要评审助手。',
+      '你在帮助用户对文章的摘要进行评审。',
+      // '你是一个严格的技术文章摘要评审助手。',
       '请对照用户提供的文章覆盖要点和分段事实摘要，判断最终摘要是否合格。',
       '合格标准：',
       '1. 不改变原文知识点、结论、观点',
@@ -176,7 +178,8 @@ export function buildSummaryReviewPrompt(options: {
       '4. 重要图片、链接、参考资料、原文链接不能遗漏',
       '5. 输出应为结构清晰、信息密度高的 Markdown 摘要',
       '6. 不允许主观发挥或引入原文没有的信息',
-      '请只输出 JSON，不要输出 Markdown，不要解释。JSON 格式必须为：{"passed":boolean,"feedback":"string","issues":["string"],"missingSections":["string"],"missingLinks":["string"],"missingImages":["string"],"missingConcepts":["string"],"missingConstraints":["string"]}',
+      '请只输出 JSON 对象，不要输出 Markdown，不要解释。',
+      '返回字段必须包含：passed、feedback、issues、missingSections、missingLinks、missingImages、missingConcepts、missingConstraints。',
     ].join('\n'),
     userPrompt: [
       `文章标题：${title || '未显式声明'}`,
@@ -200,10 +203,12 @@ export function buildCoverageExtractionPrompt(options: {
 }): StructuredPrompt {
   return {
     systemPrompt: [
-      '你是一个技术文章信息抽取助手。',
+      '你在帮助用户从文章中抽取覆盖要点。',
+      // '你是一个技术文章信息抽取助手。',
       '请从用户提供的文章中抽取后续摘要必须保留的覆盖要点。',
       '文章可能不是标准 Markdown，可能来自公众号或其他拷贝来源，请根据文本内容识别结构，不要依赖 Markdown 标题。',
-      '只输出 JSON，不要解释。JSON 格式必须为：{"sourceLinks":["string"],"referenceLinks":["string"],"importantImages":["string"],"coreConcepts":["string"],"keyConclusions":["string"],"constraints":["string"],"codeBlocksSummary":["string"]}',
+      '只输出 JSON 对象，不要解释。',
+      '返回字段必须包含：sourceLinks、referenceLinks、importantImages、coreConcepts、keyConclusions、constraints、codeBlocksSummary。',
     ].join('\n'),
     userPrompt: [
       `文章标题：${options.title || '未显式声明'}`,
@@ -223,13 +228,14 @@ export function buildChunkSummaryPrompt(options: {
 }): StructuredPrompt {
   return {
     systemPrompt: [
-      '你是一个技术文章分段整理助手。',
+      '你在帮助用户对文章的分段进行摘要。',
+      // '你是一个技术文章分段整理助手。',
       '请根据当前分段内容，产出一份高信息密度的分段事实摘要。',
       '文章可能不是标准 Markdown，不要依赖 Markdown 结构本身。',
       '要求：',
       '- 只总结当前分段，不补充原文没有的信息',
       '- 保留本段中的关键概念、结论、限制、链接、图片、代码要点',
-      '- 输出 Markdown 正文，优先用短句和要点',
+      '- 输出 Markdown 正文，优先使用短句和要点列表',
       '- 不要写总览，不要重复其他分段内容',
     ].join('\n'),
     userPrompt: [

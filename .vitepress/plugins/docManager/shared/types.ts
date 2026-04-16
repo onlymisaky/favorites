@@ -49,8 +49,6 @@ export interface SummaryAttemptOptions {
   body: string
   relativePath: string
   title: string
-  model: DocSummaryModel
-  reviewModel: DocSummaryModel
   reviewFeedback?: string
   previousSummaryContent?: string
   previousReviewDetails?: SummaryReviewDetails

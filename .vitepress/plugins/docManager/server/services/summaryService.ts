@@ -1,4 +1,3 @@
-import type { DocSummaryModel } from '../../shared'
 import type {
   SummaryAttemptOptions,
   SummaryChunk,
@@ -6,7 +5,12 @@ import type {
   SummaryPlan,
   SummaryPlanHooks,
 } from '../../shared/types'
-import { callCursorChat, streamCursorChat } from '../clients/cursorChatClient'
+import {
+  requestCoverageSnapshot,
+  requestMarkdown,
+  requestSummaryReview,
+  streamMarkdown,
+} from '../clients/openaiChatClient'
 import {
   buildChunkSummaryPrompt,
   buildCoverageExtractionPrompt,
@@ -14,10 +18,6 @@ import {
   buildSummaryReviewPrompt,
 } from '../prompts/docSummaryPrompts'
 import { composeSummaryDocument } from '../utils/document'
-import {
-  parseCoverageSnapshot,
-  parseSummaryReviewResult,
-} from '../utils/parsing'
 
 const SUMMARY_CHUNK_TARGET_SIZE = 5000
 const SUMMARY_CHUNK_SOFT_LIMIT = 6500
@@ -37,7 +37,6 @@ export async function generateQualifiedSummaryMarkdown(
     relativePath: options.relativePath,
     title: options.title,
     summaryBody,
-    model: options.reviewModel,
   })
 
   return {
@@ -67,7 +66,7 @@ export async function streamSingleSummaryAttempt(
   emit('status', {
     stage: 'generating',
     attemptCount,
-    message: '正在提取文章覆盖要点...',
+    message: '正在提取文章覆盖要点……',
   })
 
   const summaryPlan = await buildSummaryPlan(options, {
@@ -83,7 +82,7 @@ export async function streamSingleSummaryAttempt(
       emit('status', {
         stage: 'generating',
         attemptCount,
-        message: `正在整理第 ${chunkIndex}/${chunkCount} 段内容...`,
+        message: `正在整理第 ${chunkIndex}/${chunkCount} 段内容……`,
       })
     },
     onChunkComplete(chunkIndex, chunkCount) {
@@ -94,7 +93,7 @@ export async function streamSingleSummaryAttempt(
   emit('status', {
     stage: 'generating',
     attemptCount,
-    message: `正在汇总第 ${attemptCount} 次总结...`,
+    message: `正在汇总第 ${attemptCount} 次总结……`,
   })
 
   let attemptSummaryBody = ''
@@ -116,7 +115,7 @@ export async function streamSingleSummaryAttempt(
   emit('status', {
     stage: 'reviewing',
     attemptCount,
-    message: `正在校验第 ${attemptCount} 次总结...`,
+    message: `正在校验第 ${attemptCount} 次总结……`,
   })
 
   const reviewResult = await reviewSummaryMarkdown({
@@ -125,7 +124,6 @@ export async function streamSingleSummaryAttempt(
     relativePath: options.relativePath,
     title: options.title,
     summaryBody: attemptSummaryBody,
-    model: options.reviewModel,
   })
 
   emit('review-result', {
@@ -163,7 +161,6 @@ export async function buildSummaryPlan(
     body: normalizedBody,
     relativePath: options.relativePath,
     title: options.title,
-    model: options.reviewModel ?? options.model,
   })
   hooks?.onCoverageExtracted?.(coverageSnapshot, chunks.length)
 
@@ -177,7 +174,6 @@ export async function buildSummaryPlan(
       coverageSnapshot,
       relativePath: options.relativePath,
       title: options.title,
-      model: options.model,
     })
     chunkSummaries.push({
       chunkIndex: chunk.chunkIndex,
@@ -197,7 +193,6 @@ export async function buildSummaryPlan(
 async function generateFinalSummaryMarkdown(options: {
   relativePath: string
   title: string
-  model: DocSummaryModel
   coverageSnapshot: SummaryCoverageSnapshot
   chunkSummaries: SummaryPlan['chunkSummaries']
   reviewFeedback?: string
@@ -207,13 +202,9 @@ async function generateFinalSummaryMarkdown(options: {
 }) {
   const prompt = buildSummaryPrompt(options)
 
-  return callCursorChat({
-    model: options.model,
-    relativePath: options.relativePath,
+  return requestMarkdown({
     systemPrompt: prompt.systemPrompt,
     userPrompt: prompt.userPrompt,
-    emptyContentError: 'Summary generation returned empty content.',
-    failureMessage: 'Summary generation failed.',
   })
 }
 
@@ -221,7 +212,6 @@ async function streamFinalSummaryMarkdown(
   options: {
     relativePath: string
     title: string
-    model: DocSummaryModel
     coverageSnapshot: SummaryCoverageSnapshot
     chunkSummaries: SummaryPlan['chunkSummaries']
     reviewFeedback?: string
@@ -233,17 +223,10 @@ async function streamFinalSummaryMarkdown(
 ) {
   const prompt = buildSummaryPrompt(options)
 
-  return streamCursorChat(
-    {
-      model: options.model,
-      relativePath: options.relativePath,
-      systemPrompt: prompt.systemPrompt,
-      userPrompt: prompt.userPrompt,
-      emptyContentError: 'Summary generation returned empty content.',
-      failureMessage: 'Summary generation failed.',
-    },
-    onDelta,
-  )
+  return streamMarkdown({
+    systemPrompt: prompt.systemPrompt,
+    userPrompt: prompt.userPrompt,
+  }, onDelta)
 }
 
 async function reviewSummaryMarkdown(options: {
@@ -252,51 +235,26 @@ async function reviewSummaryMarkdown(options: {
   relativePath: string
   title: string
   summaryBody: string
-  model: DocSummaryModel
 }) {
   const prompt = buildSummaryReviewPrompt(options)
 
-  const content = await callCursorChat({
-    model: options.model,
-    relativePath: options.relativePath,
+  return requestSummaryReview({
     systemPrompt: prompt.systemPrompt,
     userPrompt: prompt.userPrompt,
-    emptyContentError: 'Summary review returned empty content.',
-    failureMessage: 'Summary review failed.',
   })
-
-  const reviewResult = parseSummaryReviewResult(content)
-
-  if (!reviewResult) {
-    throw new Error('Summary review returned invalid JSON.')
-  }
-
-  return reviewResult
 }
 
 async function extractSummaryCoverageSnapshot(options: {
   body: string
   relativePath: string
   title: string
-  model: DocSummaryModel
 }) {
   const prompt = buildCoverageExtractionPrompt(options)
 
-  const content = await callCursorChat({
-    model: options.model,
-    relativePath: options.relativePath,
+  return requestCoverageSnapshot({
     systemPrompt: prompt.systemPrompt,
     userPrompt: prompt.userPrompt,
-    emptyContentError: 'Summary coverage extraction returned empty content.',
-    failureMessage: 'Summary coverage extraction failed.',
   })
-  const snapshot = parseCoverageSnapshot(content)
-
-  if (!snapshot) {
-    throw new Error('Summary coverage extraction returned invalid JSON.')
-  }
-
-  return snapshot
 }
 
 async function summarizeChunkMarkdown(options: {
@@ -305,17 +263,12 @@ async function summarizeChunkMarkdown(options: {
   coverageSnapshot: SummaryCoverageSnapshot
   relativePath: string
   title: string
-  model: DocSummaryModel
 }) {
   const prompt = buildChunkSummaryPrompt(options)
 
-  return callCursorChat({
-    model: options.model,
-    relativePath: options.relativePath,
+  return requestMarkdown({
     systemPrompt: prompt.systemPrompt,
     userPrompt: prompt.userPrompt,
-    emptyContentError: 'Chunk summary generation returned empty content.',
-    failureMessage: 'Chunk summary generation failed.',
   })
 }
 

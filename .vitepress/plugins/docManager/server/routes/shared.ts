@@ -3,7 +3,6 @@ import type { JsonBody } from '../utils/http'
 import fs from 'node:fs/promises'
 import { resolveMarkdownPath } from '../utils/document'
 import {
-
   readJsonBody,
   sendJson,
 } from '../utils/http'
@@ -32,7 +31,7 @@ export async function readRequiredJsonBody<T extends JsonBody>(
   if (!body) {
     sendJson(context.res, 400, {
       success: false,
-      error: 'Invalid or empty JSON body.',
+      error: '请求体不是合法的 JSON，或内容为空。',
     })
     return null
   }
@@ -47,7 +46,7 @@ export async function resolveRequiredSourcePath(
   if (typeof relativePath !== 'string') {
     sendJson(context.res, 400, {
       success: false,
-      error: 'Missing relativePath.',
+      error: '缺少 relativePath。',
     })
     return null
   }
@@ -57,7 +56,7 @@ export async function resolveRequiredSourcePath(
   if (!sourcePath) {
     sendJson(context.res, 400, {
       success: false,
-      error: 'Invalid document path.',
+      error: '文档路径不合法。',
     })
     return null
   }
@@ -68,7 +67,7 @@ export async function resolveRequiredSourcePath(
   catch {
     sendJson(context.res, 404, {
       success: false,
-      error: 'Document not found.',
+      error: '未找到文档。',
     })
     return null
   }

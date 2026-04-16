@@ -68,7 +68,7 @@ export function createDocManagerRequestHandler(options: {
     const route = ROUTE_MAP.get(createRouteKey(req.method ?? 'GET', pathname))
 
     if (!route) {
-      sendJson(res, 404, { success: false, error: 'Unknown endpoint.' })
+      sendJson(res, 404, { success: false, error: '未知接口。' })
       return
     }
 
@@ -86,7 +86,7 @@ export function createDocManagerRequestHandler(options: {
           error:
             error instanceof Error
               ? error.message
-              : 'Doc manager request failed.',
+              : '文档管理请求失败。',
         })
       }
     }

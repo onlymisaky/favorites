@@ -24,10 +24,6 @@ import {
 } from '../../utils/http'
 import { parseSummaryReviewDetails } from '../../utils/parsing'
 import {
-  validateReviewModel,
-  validateSummaryModel,
-} from '../../utils/validation'
-import {
   readRequiredJsonBody,
   resolveRequiredSourcePath,
 
@@ -54,8 +50,6 @@ export const handleSummaryPreviewRequest: RouteHandler = async (context) => {
     const sourceContent = await fs.readFile(sourcePath, 'utf-8')
     const { body: markdownBody } = splitFrontmatter(sourceContent)
     const title = extractFirstHeading(markdownBody)
-    const model = validateSummaryModel(body.model)
-    const reviewModel = validateReviewModel(body.reviewModel)
     const reviewFeedback
       = typeof body.reviewFeedback === 'string' ? body.reviewFeedback.trim() : ''
     const previousSummaryContent
@@ -79,8 +73,6 @@ export const handleSummaryPreviewRequest: RouteHandler = async (context) => {
           body: markdownBody,
           relativePath: body.relativePath,
           title,
-          model,
-          reviewModel,
           reviewFeedback,
           previousSummaryContent,
           previousReviewDetails,
@@ -98,8 +90,6 @@ export const handleSummaryPreviewRequest: RouteHandler = async (context) => {
       body: markdownBody,
       relativePath: body.relativePath,
       title,
-      model,
-      reviewModel,
       reviewFeedback,
       previousSummaryContent,
       previousReviewDetails,
@@ -118,7 +108,7 @@ export const handleSummaryPreviewRequest: RouteHandler = async (context) => {
   }
   catch (error) {
     const message
-      = error instanceof Error ? error.message : 'Summary generation failed.'
+      = error instanceof Error ? error.message : '总结生成失败。'
 
     if (wantsEventStream) {
       endSse(context.res, false, message)
@@ -151,7 +141,7 @@ export const handleSummaryApplyRequest: RouteHandler = async (context) => {
   if (typeof body.summaryContent !== 'string') {
     sendJson(context.res, 400, {
       success: false,
-      error: 'Missing summaryContent.',
+      error: '缺少 summaryContent。',
     })
     return
   }
@@ -161,7 +151,7 @@ export const handleSummaryApplyRequest: RouteHandler = async (context) => {
   if (!summaryContent) {
     sendJson(context.res, 400, {
       success: false,
-      error: 'Summary content is empty.',
+      error: '总结内容为空。',
     })
     return
   }
@@ -184,7 +174,7 @@ export const handleSummaryApplyRequest: RouteHandler = async (context) => {
   catch (error) {
     sendJson(context.res, 500, {
       success: false,
-      error: error instanceof Error ? error.message : 'Summary apply failed.',
+      error: error instanceof Error ? error.message : '应用总结失败。',
     })
   }
 }
