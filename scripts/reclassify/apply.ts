@@ -1,14 +1,19 @@
+import type { ApplyResult, CliArgs, MoveDecision } from './types.ts'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { readResultFile } from './result-file.mjs'
+import { readResultFile } from './result-file.ts'
 import {
   normalizeCliDir,
   normalizeStoredTargetDir,
   pathExists,
   toRelativeDocsPath,
-} from './utils/path.mjs'
+} from './utils/path.ts'
 
-export async function runApply(options) {
+export async function runApply(options: {
+  args: CliArgs
+  docsRoot: string
+  resultFilePath: string
+}): Promise<void> {
   const resultPayload = await readResultFile(options.resultFilePath)
   const decisions = Array.isArray(resultPayload.decisions)
     ? resultPayload.decisions
@@ -35,19 +40,25 @@ export async function runApply(options) {
     ].join(' | '),
   )
 
+  const moveDecisions = decisions.filter(
+    (decision): decision is MoveDecision => decision.status === 'move',
+  )
   const applyResult = await applyDecisions({
     docsRoot: options.docsRoot,
-    decisions,
+    decisions: moveDecisions,
   })
 
   printApplyResult(applyResult)
 }
 
-export function validateApplyTargetDir(options) {
+function validateApplyTargetDir(options: {
+  expectedTargetDir: string | null
+  resultTargetDir: string | null
+  resultFilePath: string
+}): string | null {
   const expected = options.expectedTargetDir ?? null
   const actual = options.resultTargetDir ?? null
 
-  // apply 默认直接沿用 preview 记录下来的目录范围，避免重复指定同一上下文。
   if (!expected) {
     return actual
   }
@@ -67,14 +78,17 @@ export function validateApplyTargetDir(options) {
   )
 }
 
-export async function applyDecisions(options) {
-  const result = createApplyResult()
+async function applyDecisions(options: {
+  docsRoot: string
+  decisions: MoveDecision[]
+}): Promise<ApplyResult> {
+  const result: ApplyResult = {
+    moved: [],
+    skipped: [],
+    createdCategories: [],
+  }
 
   for (const decision of options.decisions) {
-    if (decision.status !== 'move') {
-      continue
-    }
-
     const moveResult = await applyMoveDecision(options.docsRoot, decision)
 
     if (moveResult.status === 'moved') {
@@ -96,15 +110,7 @@ export async function applyDecisions(options) {
   return result
 }
 
-export function createApplyResult() {
-  return {
-    moved: [],
-    skipped: [],
-    createdCategories: [],
-  }
-}
-
-export async function applyMoveDecision(docsRoot, decision) {
+async function applyMoveDecision(docsRoot: string, decision: MoveDecision) {
   const paths = getDecisionPaths(docsRoot, decision)
   const directoryExisted = await pathExists(paths.targetDirectory)
 
@@ -113,7 +119,7 @@ export async function applyMoveDecision(docsRoot, decision) {
 
     if (await pathExists(paths.targetPath)) {
       return {
-        status: 'skipped',
+        status: 'skipped' as const,
         item: createSkippedMoveItem(
           docsRoot,
           decision.relativePath,
@@ -123,11 +129,10 @@ export async function applyMoveDecision(docsRoot, decision) {
       }
     }
 
-    // rename 是移动语义，不会保留源文件；apply 阶段的行为一直是 move 而不是 copy。
     await fs.rename(paths.sourcePath, paths.targetPath)
 
     return {
-      status: 'moved',
+      status: 'moved' as const,
       createdCategory:
         decision.isNewCategory && !directoryExisted ? decision.targetCategory : null,
       item: {
@@ -138,7 +143,7 @@ export async function applyMoveDecision(docsRoot, decision) {
   }
   catch (error) {
     return {
-      status: 'skipped',
+      status: 'skipped' as const,
       item: createSkippedMoveItem(
         docsRoot,
         decision.relativePath,
@@ -149,7 +154,7 @@ export async function applyMoveDecision(docsRoot, decision) {
   }
 }
 
-export function getDecisionPaths(docsRoot, decision) {
+function getDecisionPaths(docsRoot: string, decision: MoveDecision) {
   const targetDirectory = path.join(docsRoot, decision.targetCategory)
 
   return {
@@ -159,7 +164,12 @@ export function getDecisionPaths(docsRoot, decision) {
   }
 }
 
-export function createSkippedMoveItem(docsRoot, relativePath, targetPath, reason) {
+function createSkippedMoveItem(
+  docsRoot: string,
+  relativePath: string,
+  targetPath: string,
+  reason: string,
+) {
   return {
     relativePath,
     reason,
@@ -167,7 +177,7 @@ export function createSkippedMoveItem(docsRoot, relativePath, targetPath, reason
   }
 }
 
-export function printApplyResult(result) {
+function printApplyResult(result: ApplyResult): void {
   console.log('\n=== 执行结果 ===')
   console.log(`成功移动: ${result.moved.length}`)
   console.log(`跳过: ${result.skipped.length}`)

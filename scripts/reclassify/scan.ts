@@ -1,14 +1,15 @@
+import type { Dirent, Stats } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { DOCS_ROOT_NAME } from './config.mjs'
+import { DOCS_ROOT_NAME } from './config.ts'
 import {
   normalizeCliDir,
   normalizeToForwardSlash,
   toPosixPath,
   toRelativeDocsPath,
-} from './utils/path.mjs'
+} from './utils/path.ts'
 
-export async function listTopLevelCategories(docsRoot) {
+export async function listTopLevelCategories(docsRoot: string): Promise<string[]> {
   const entries = await fs.readdir(docsRoot, { withFileTypes: true })
 
   return entries
@@ -17,10 +18,10 @@ export async function listTopLevelCategories(docsRoot) {
     .sort((left, right) => left.localeCompare(right, 'zh-Hans-CN'))
 }
 
-export async function listMarkdownFiles(scanRoot, docsRoot) {
-  const results = []
+export async function listMarkdownFiles(scanRoot: string, docsRoot: string): Promise<string[]> {
+  const results: string[] = []
 
-  async function walk(directory) {
+  async function walk(directory: string): Promise<void> {
     const entries = await fs.readdir(directory, { withFileTypes: true })
 
     for (const entry of entries) {
@@ -48,11 +49,10 @@ export async function listMarkdownFiles(scanRoot, docsRoot) {
   return results
 }
 
-export function shouldIncludeMarkdownEntry(entry) {
-  return entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'index.md'
-}
-
-export async function resolveTargetDir(docsRoot, inputDir) {
+export async function resolveTargetDir(
+  docsRoot: string,
+  inputDir: string,
+): Promise<string | null> {
   const normalizedDir = normalizeCliDir(inputDir)
 
   if (!normalizedDir) {
@@ -85,7 +85,7 @@ export async function resolveTargetDir(docsRoot, inputDir) {
     throw new Error(`dir 非法，必须是 ${DOCS_ROOT_NAME} 下的子目录: ${inputDir}`)
   }
 
-  let stat = null
+  let stat: Stats | null = null
 
   try {
     stat = await fs.stat(absoluteDir)
@@ -99,4 +99,8 @@ export async function resolveTargetDir(docsRoot, inputDir) {
   }
 
   return toPosixPath(relativeToRoot)
+}
+
+function shouldIncludeMarkdownEntry(entry: Dirent): boolean {
+  return entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'index.md'
 }

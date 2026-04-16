@@ -1,4 +1,4 @@
-export function parseBoolean(value) {
+export function parseBoolean(value: string): boolean {
   if (value === 'true') {
     return true
   }
@@ -10,7 +10,7 @@ export function parseBoolean(value) {
   throw new Error(`布尔参数仅支持 true 或 false，收到: ${value}`)
 }
 
-export function parseNonNegativeInteger(value, key) {
+export function parseNonNegativeInteger(value: string, key: string): number {
   const parsed = Number.parseInt(value, 10)
 
   if (!Number.isFinite(parsed) || parsed < 0) {
@@ -20,7 +20,7 @@ export function parseNonNegativeInteger(value, key) {
   return parsed
 }
 
-export function parsePositiveInteger(value, key) {
+export function parsePositiveInteger(value: string, key: string): number {
   const parsed = Number.parseInt(value, 10)
 
   if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -30,24 +30,7 @@ export function parsePositiveInteger(value, key) {
   return parsed
 }
 
-export function extractJsonObject(content) {
-  const fencedMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/u)
-
-  if (fencedMatch) {
-    return fencedMatch[1].trim()
-  }
-
-  const startIndex = content.indexOf('{')
-  const endIndex = content.lastIndexOf('}')
-
-  if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-    return ''
-  }
-
-  return content.slice(startIndex, endIndex + 1).trim()
-}
-
-export function sanitizeCategoryName(name) {
+export function sanitizeCategoryName(name: unknown): string {
   if (typeof name !== 'string') {
     return ''
   }
@@ -69,7 +52,7 @@ export function sanitizeCategoryName(name) {
   return normalized
 }
 
-export function normalizeConfidence(input) {
+export function normalizeConfidence(input: unknown): number | null {
   if (typeof input !== 'number' || !Number.isFinite(input)) {
     return null
   }
@@ -85,16 +68,12 @@ export function normalizeConfidence(input) {
   return Number(input.toFixed(2))
 }
 
-export function chunkItems(items, chunkSize) {
-  const chunks = []
+export function chunkItems<T>(items: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = []
 
   for (let index = 0; index < items.length; index += chunkSize) {
     chunks.push(items.slice(index, index + chunkSize))
   }
 
   return chunks
-}
-
-export function createRequestId() {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }

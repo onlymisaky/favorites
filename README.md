@@ -4,14 +4,14 @@
 
 ## 批量重归类脚本
 
-项目内置了一个基于 `.vitepress/plugins/docManager` AI 接口的批量重归类脚本：
+项目内置了一个基于 OpenAI Chat Completions 的批量重归类脚本：
 
 ```bash
 npm run docs:reclassify -- [options]
 ```
 
 这个脚本会扫描 `wechat` 下所有 Markdown 文件，排除任意 `index.md`，只根据文件名做 AI 归类。
-脚本源码已按职责拆分到 `scripts/reclassify/` 目录，`scripts/reclassify-wechat-by-title.mjs` 只保留兼容入口。
+脚本源码按职责拆分在 `scripts/reclassify/` 目录，入口是 `scripts/reclassify-wechat-by-title.ts`，通过 `tsx` 运行。
 
 ### 执行流程
 
@@ -28,11 +28,15 @@ npm run docs:reclassify -- [options]
 
 - `--model=<model>`
   - 指定使用的 AI 模型
-  - 可选值：
-    - `openai/gpt-5.1-codex-mini`
-    - `anthropic/claude-sonnet-4.6`
-    - `google/gemini-3-flash`
-  - 默认值：`anthropic/claude-sonnet-4.6`
+  - 不传时读取 `OPENAI_MODEL`
+
+- `--baseUrl=<url>` / `--base-url=<url>`
+  - 指定 OpenAI 兼容接口的基础地址
+  - 不传时读取 `OPENAI_BASE_URL`
+
+- `--apiKey=<key>` / `--api-key=<key>`
+  - 指定 API Key
+  - 不传时读取 `OPENAI_API_KEY`
 
 - `--dir=<path>`
   - 只处理 `wechat` 下某个子目录
@@ -92,6 +96,12 @@ npm run docs:reclassify -- --mode=preview --batch-size=20
 
 ```bash
 npm run docs:reclassify -- --mode=preview --include-new-categories=false
+```
+
+显式指定模型和接口地址：
+
+```bash
+npm run docs:reclassify -- --model=gpt-4.1-mini --baseUrl=https://api.openai.com/v1
 ```
 
 使用已有结果执行移动：

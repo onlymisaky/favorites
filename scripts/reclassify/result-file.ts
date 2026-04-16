@@ -1,9 +1,27 @@
+import type {
+  CliArgs,
+  Decision,
+  DecisionBase,
+  ErrorDecision,
+  InvalidDecision,
+  KeepDecision,
+  MoveDecision,
+  ResultPayload,
+  ResultSummary,
+} from './types.ts'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { DOCS_ROOT_NAME, RESULT_FORMAT_VERSION } from './config.mjs'
-import { ensureDirectory, getTopLevelDirectoryName } from './utils/path.mjs'
+import { DOCS_ROOT_NAME, RESULT_FORMAT_VERSION } from './config.ts'
+import { ensureDirectory, getTopLevelDirectoryName } from './utils/path.ts'
 
-export function createResultPayload(options) {
+export function createResultPayload(options: {
+  args: CliArgs
+  categories: string[]
+  decisions: Decision[]
+  selectedFileCount: number
+  targetDir: string | null
+  totalFiles: number
+}): ResultPayload {
   const summary = summarizeDecisions(options.decisions)
 
   return {
@@ -12,6 +30,7 @@ export function createResultPayload(options) {
     docsRoot: DOCS_ROOT_NAME,
     targetDir: options.targetDir,
     model: options.args.model,
+    baseUrl: options.args.baseUrl,
     batchSize: options.args.batchSize,
     includeNewCategories: options.args.includeNewCategories,
     totalFiles: options.totalFiles,
@@ -22,13 +41,15 @@ export function createResultPayload(options) {
   }
 }
 
-// preview 的结果文件既是审阅材料，也是 apply 阶段的唯一输入来源。
-export async function writeResultFile(resultFilePath, payload) {
+export async function writeResultFile(
+  resultFilePath: string,
+  payload: ResultPayload,
+): Promise<void> {
   await ensureDirectory(path.dirname(resultFilePath))
   await fs.writeFile(resultFilePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8')
 }
 
-export async function readResultFile(resultFilePath) {
+export async function readResultFile(resultFilePath: string): Promise<ResultPayload> {
   let content = ''
 
   try {
@@ -38,7 +59,7 @@ export async function readResultFile(resultFilePath) {
     throw new Error(`找不到结果文件: ${resultFilePath}。请先运行 preview。`)
   }
 
-  let parsed = null
+  let parsed: unknown = null
 
   try {
     parsed = JSON.parse(content)
@@ -50,61 +71,16 @@ export async function readResultFile(resultFilePath) {
   if (
     !parsed
     || typeof parsed !== 'object'
-    || parsed.formatVersion !== RESULT_FORMAT_VERSION
+    || (parsed as ResultPayload).formatVersion !== RESULT_FORMAT_VERSION
+    || !Array.isArray((parsed as ResultPayload).decisions)
   ) {
     throw new Error(`结果文件版本不匹配: ${resultFilePath}`)
   }
 
-  return parsed
+  return parsed as ResultPayload
 }
 
-export function summarizeDecisions(decisions) {
-  const summary = {
-    move: 0,
-    keep: 0,
-    invalid: 0,
-    error: 0,
-    newCategories: [],
-  }
-
-  for (const decision of decisions) {
-    switch (decision.status) {
-      case 'move':
-        summary.move += 1
-
-        if (
-          decision.isNewCategory
-          && decision.targetCategory
-          && !summary.newCategories.includes(decision.targetCategory)
-        ) {
-          summary.newCategories.push(decision.targetCategory)
-        }
-        break
-      case 'keep':
-        summary.keep += 1
-        break
-      case 'invalid':
-        summary.invalid += 1
-        break
-      default:
-        summary.error += 1
-        break
-    }
-  }
-
-  summary.newCategories.sort((left, right) => left.localeCompare(right, 'zh-Hans-CN'))
-  return summary
-}
-
-export function createDecisionBase(relativePath) {
-  return {
-    relativePath,
-    fileName: path.posix.basename(relativePath),
-    currentCategory: getTopLevelDirectoryName(relativePath),
-  }
-}
-
-export function createErrorDecision(relativePath, reason) {
+export function createErrorDecision(relativePath: string, reason: string): ErrorDecision {
   return {
     ...createDecisionBase(relativePath),
     status: 'error',
@@ -115,7 +91,15 @@ export function createErrorDecision(relativePath, reason) {
   }
 }
 
-export function createInvalidDecision(baseDecision, options) {
+export function createInvalidDecision(
+  baseDecision: DecisionBase,
+  options: {
+    reason: string
+    aiReason: string
+    confidence: number | null
+    targetCategory: string
+  },
+): InvalidDecision {
   return {
     ...baseDecision,
     status: 'invalid',
@@ -126,19 +110,26 @@ export function createInvalidDecision(baseDecision, options) {
   }
 }
 
-export function createKeepDecision(baseDecision, options) {
+export function createKeepDecision(baseDecision: DecisionBase): KeepDecision {
   return {
     ...baseDecision,
     status: 'keep',
-    reason: 'AI 判断当前分类已合适。',
-    aiReason: options.aiReason,
-    confidence: options.confidence,
-    targetCategory: options.targetCategory,
-    isNewCategory: options.isNewCategory,
+    reason: 'AI 未建议移动，保留原分类。',
+    aiReason: '',
+    confidence: null,
+    targetCategory: baseDecision.currentCategory,
   }
 }
 
-export function createMoveDecision(baseDecision, options) {
+export function createMoveDecision(
+  baseDecision: DecisionBase,
+  options: {
+    aiReason: string
+    confidence: number | null
+    targetCategory: string
+    isNewCategory: boolean
+  },
+): MoveDecision {
   return {
     ...baseDecision,
     status: 'move',
@@ -150,7 +141,12 @@ export function createMoveDecision(baseDecision, options) {
   }
 }
 
-export function printPreview(options) {
+export function printPreview(options: {
+  decisions: Decision[]
+  summary: ResultSummary
+  resultFilePath: string
+  targetDir: string | null
+}): void {
   console.log('\n=== 预览结果 ===')
   console.log(`总数: ${options.decisions.length}`)
   console.log(`目录范围: ${options.targetDir ?? '(all)'}`)
@@ -168,7 +164,7 @@ export function printPreview(options) {
     decision => decision.status === 'error' || decision.status === 'invalid',
   )
   const moveDecisions = options.decisions.filter(
-    decision => decision.status === 'move',
+    (decision): decision is MoveDecision => decision.status === 'move',
   )
 
   if (errorDecisions.length > 0) {
@@ -195,5 +191,50 @@ export function printPreview(options) {
         console.log(`  reason: ${decision.aiReason}`)
       }
     }
+  }
+}
+
+function summarizeDecisions(decisions: Decision[]): ResultSummary {
+  const summary: ResultSummary = {
+    move: 0,
+    keep: 0,
+    invalid: 0,
+    error: 0,
+    newCategories: [],
+  }
+
+  for (const decision of decisions) {
+    switch (decision.status) {
+      case 'move':
+        summary.move += 1
+        if (
+          decision.isNewCategory
+          && decision.targetCategory
+          && !summary.newCategories.includes(decision.targetCategory)
+        ) {
+          summary.newCategories.push(decision.targetCategory)
+        }
+        break
+      case 'keep':
+        summary.keep += 1
+        break
+      case 'invalid':
+        summary.invalid += 1
+        break
+      default:
+        summary.error += 1
+        break
+    }
+  }
+
+  summary.newCategories.sort((left, right) => left.localeCompare(right, 'zh-Hans-CN'))
+  return summary
+}
+
+function createDecisionBase(relativePath: string): DecisionBase {
+  return {
+    relativePath,
+    fileName: path.posix.basename(relativePath),
+    currentCategory: getTopLevelDirectoryName(relativePath),
   }
 }
